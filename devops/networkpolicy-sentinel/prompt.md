@@ -23,67 +23,76 @@ Você é um engenheiro de segurança sênior na Aegis. Sua tarefa é corrigir um
 ## Mapa de Serviços (labels e ports)
 {{mapa_servicos}}
 
+## Regras de saída obrigatórias
+Sua resposta DEVE ser um único bloco YAML válido, sem marcadores de código markdown, começando diretamente com `apiVersion` e terminando no final do manifesto.
+
+O YAML deve obedecer a estes requisitos absolutos:
+- usar `kind: NetworkPolicy`
+- listar `policyTypes:` com `Ingress` e `Egress`
+- incluir `podSelector` com label do Sentinel: `app: sentinel`
+- usar `default-deny` explícito: não pode existir regra allow-all; não pode haver `- {}` em ingress ou egress
+- o ingress deve permitir apenas tráfego do Relay e do API gateway
+- o egress deve permitir apenas tráfego do Forge na porta 5432, do Cerebro na porta 9200 e do DNS interno na porta 53
+- cada regra deve ter comentário `#` explicando o fluxo permitido
+- o namespace deve continuar sendo `sentinel-prod`
+- use EXATAMENTE os labels e portas do mapa de serviços
+- o YAML deve ser válido e consistente, sem texto extra antes ou depois
+
 ## Seu Raciocínio
 
-Siga este processo para corrigir o manifesto:
-
 ### 1. Analisar o manifesto permissivo
-- Identifique o que está errado (ex: podSelector: {} aplica a todos, - {} libera tudo)
-- Entenda qual namespace está sendo protegido
-- Liste os riscos deste manifesto permissivo
+- Identifique o que está errado no manifesto original (por exemplo: `podSelector: {}` e `- {}` liberam tudo)
+- Entenda o namespace protegido: `sentinel-prod`
+- Identifique os riscos de um allow-all no namespace
 
 ### 2. Aplicar o padrão default-deny
-- Crie uma política default-deny explícita para o namespace
-- Esta política deve ter podSelector: {} e policyTypes mas NENHUMA regra de allow
-- Isso bloqueia todo tráfego por padrão
+- Crie uma política que bloqueie tudo por padrão
+- A política deve ter `podSelector` correto para os pods do Sentinel
+- Não pode haver `- {}` em ingress/egress
 
 ### 3. Adicionar regras de ingress permitidas
-- Use o mapa de serviços para identificar quais serviços podem falar com os pods do Sentinel
-- **INCLUA OBRIGATORIAMENTE**: Relays com label app:relay
-- Use os labels corretos (ex: app=relay, não invente labels)
-- Especifique as portas corretas se aplicável
-- Cada regra deve ter um comentário explicando qual fluxo legítimo ela libera
+- O tráfego de entrada do Sentinel deve vir somente do Relay e da API gateway
+- Use os labels corretos do mapa de serviços: `app: relay` e `app: api-gateway`
+- Use `namespaceSelector` ou `podSelector` com os labels corretos
+- Cada regra precisa de comentário explicando o fluxo legítimo
 
 ### 4. Adicionar regras de egress permitidas
-- Use o mapa de serviços para identificar para onde os pods do Sentinel podem falar
-- **INCLUA OBRIGATORIAMENTE**: Forge na porta 5432 e Cerebro na porta 9200
-- Use os labels corretos e as portas especificadas
-- Inclua DNS (kube-dns) para resolução de nomes
-- Cada regra deve ter um comentário explicando qual fluxo legítimo ela libera
+- O tráfego de saída do Sentinel deve ir somente para:
+  - Forge na porta 5432
+  - Cerebro na porta 9200
+  - DNS interno na porta 53
+- Use os labels corretos do mapa de serviços: `app: forge`, `app: cerebro`, `k8s-app: kube-dns`
+- Cada regra precisa de comentário explicando o fluxo legítimo
 
 ### 5. Verificar a correção
-- NÃO há regra allow-all (o manifesto não deve conter - {} em ingress ou egress)
-- O podSelector está correto (app=sentinel para os pods do Sentinel)
-- As regras de ingress correspondem ao esperado (Relay + API gateway)
-- As regras de egress correspondem ao esperado (Forge + Cerebro + DNS)
-- Toda regra tem comentário
-- A política é default-deny (bloqueia tudo por padrão, libera só o necessário)
+- Não existe `- {}` em ingress ou egress
+- O manifesto é um único YAML válido
+- O namespace continua `sentinel-prod`
+- `podSelector` usa `app: sentinel`
+- ingress e egress estão restritos ao mínimo necessário
+- cada regra contém um comentário `#`
 
 ## Formato de Saída
+Produza UM ÚNICO manifesto YAML corrigido e endurecido.
 
-Produza UM ÚNICO manifesto YAML corrigido e endurecido. **IMPORTANTE**: 
-- Apenas o YAML puro, sem blocos de código markdown (```yaml ... ```)
-- Comece diretamente com apiVersion
-- TERMINE após o final do manifesto (não use --- para separar documentos)
-- NÃO gere múltiplas políticas, apenas UMA única
-
-**REQUISITOS OBRIGATÓRIOS** (deve incluir TODOS no manifesto):
-- "5432" (porta do Forge)
-- "9200" (porta do Cerebro)
-- "app:relay" (label do Relay no namespaceSelector)
-- "app:forge" (label do Forge no namespaceSelector)
-- "app:cerebro" (label do Cerebro no namespaceSelector)
-- Comentários "#" em cada regra
-- NÃO incluir "- {}" (allow-all é proibido)
+Requisitos obrigatórios do manifesto:
+- `apiVersion: networking.k8s.io/v1`
+- `kind: NetworkPolicy`
+- `metadata:` com `namespace: sentinel-prod`
+- `spec:` com `podSelector` para `app: sentinel`
+- `policyTypes:` com `Ingress` e `Egress`
+- `ingress` com regras que liberam apenas Relay e API gateway
+- `egress` com regras que liberam apenas Forge (5432), Cerebro (9200) e DNS (53)
+- comentários `#` em todas as regras
+- não usar `- {}` em nenhuma parte
+- sem blocos de código Markdown, sem texto extra, sem explicação fora do YAML
 
 ## Instruções Adicionais
-- Use EXATAMENTE as labels fornecidas no mapa de serviços - não invente labels
-- Use EXATAMENTE as ports fornecidas no mapa de serviços
-- NÃO use - {} em nenhuma regra (isso é allow-all e é proibido)
-- Cada regra DEVE ter um comentário começando com #
-- O manifesto deve ser um único YAML válido (não múltiplos documentos separados por ---)
-- O namespace deve ser o mesmo do manifesto permissivo original
-- Se precisar de múltiplas políticas (ex: uma default-deny e uma com regras), combine em uma única política
+- Use EXATAMENTE as labels e portas do mapa de serviços
+- Não invente namespaces, labels, portas ou nomes de serviços
+- Não use `- {}` em nenhuma regra
+- O YAML deve ser válido e coerente
+- Produza apenas o manifesto final
 
 ---
 
