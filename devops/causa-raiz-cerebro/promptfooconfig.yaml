@@ -54,14 +54,14 @@ tests:
           1) Causa-raiz correta: aponta a reindexação travada como causa primária e não só sintomas.
           2) Correlação causa vs consequência: separa causa de efeito (cache, circuit breaker, latência, timeouts).
           3) Ação proporcional: sugere ação coerente com a causa (reagendar ou rebaixar a reindexação; rever heap/limites).
-          4) Honestidade epistêmica: reconoce limites e não inventa certezas.
+          4) Honestidade epistêmica: reconhece limites e não inventa certezas.
           Regras:
           - total máximo = 8
           - aprovação = score >= 6 e nenhum critério zerado
           - responda apenas em uma linha: score=<0-8>; rationale=<até 18 palavras>
         threshold: 6
       - type: regex
-        value: "score=([0-8])"
+        value: "score=([0-8]); rationale=.*"
       - type: latency
         threshold: 5000
       - type: cost
