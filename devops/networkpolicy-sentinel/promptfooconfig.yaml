@@ -3,6 +3,8 @@ prompts:
 
 providers:
   - id: groq:openai/gpt-oss-20b
+    config:
+      include_reasoning: false
 
 tests:
   - vars:
@@ -50,3 +52,7 @@ tests:
         value: "output.includes('app:relay')"
       - type: contains
         value: "#"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
