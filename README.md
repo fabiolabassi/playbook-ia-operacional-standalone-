@@ -42,10 +42,10 @@ npm install -g promptfoo
 promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml
 
 # Todos os testes
-promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml --output-file results/nota-de-triagem.json
-promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml --output-file results/triagem-de-pods.json
-promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml --output-file results/networkpolicy-sentinel.json
-promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml --output-file results/causa-raiz-cerebro.json
+promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
+promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
+promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
+promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
 ```
 
 ## Configuração do GitHub Actions

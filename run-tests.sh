@@ -52,19 +52,19 @@ echo "=== Rodando testes ==="
 
 # Teste 1: nota-de-triagem
 echo "Rodando nota-de-triagem..."
-promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml --output-file results/nota-de-triagem.json
+promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
 
 # Teste 2: triagem-de-pods
 echo "Rodando triagem-de-pods..."
-promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml --output-file results/triagem-de-pods.json
+promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
 
 # Teste 3: networkpolicy-sentinel
 echo "Rodando networkpolicy-sentinel..."
-promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml --output-file results/networkpolicy-sentinel.json
+promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
 
 # Teste 4: causa-raiz-cerebro
 echo "Rodando causa-raiz-cerebro..."
-promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml --output-file results/causa-raiz-cerebro.json
+promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
 
 echo ""
 echo "=== Testes concluídos ==="
