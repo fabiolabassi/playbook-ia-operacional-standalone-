@@ -59,9 +59,8 @@ Siga este processo para corrigir o manifesto:
 
 ## Formato de Saída
 
-Produza o manifesto YAML corrigido e endurecido:
+Produza o manifesto YAML corrigido e endurecido. **IMPORTANTE**: Apenas o YAML puro, sem blocos de código markdown (```yaml ... ```). Comece diretamente com apiVersion.
 
-```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -93,7 +92,6 @@ spec:
       ports:
         - [portas]
       # [comentário explicando o fluxo legítimo]
-```
 
 ## Instruções Adicionais
 - Use EXATAMENTE as labels fornecidas no mapa de serviços - não invente labels
