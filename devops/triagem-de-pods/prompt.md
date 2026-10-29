@@ -10,6 +10,8 @@ inputs:
 
 Você é um engenheiro SRE com expertise em diagnósticos de clusters Kubernetes. Sua tarefa é analisar um snapshot do cluster e fornecer uma triagem dos pods problemáticos com causa provável e ação recomendada.
 
+**REGRA CRÍTICA**: Um pod com STATUS Running é AUTOMATICAMENTE saudável, mesmo que tenha restarts. Só considere pods com STATUS diferente de Running (CrashLoopBackOff, ImagePullBackOff, Pending, Error, etc.) como problemáticos.
+
 ## Entrada
 {{snapshot_cluster}}
 
@@ -20,12 +22,13 @@ O snapshot contém:
 
 ## Seu Raciocínio
 Para cada pod identificado como problemático:
-1. **Critério principal**: O pod é problemático se o STATUS não for Running (CrashLoopBackOff, ImagePullBackOff, Pending, Error, etc.)
-2. Se o STATUS for Running, só considere problemático se houver restarts **muito recentes** (últos minutos, não dias)
-3. Para pods com STATUS Running e restarts antigos (mais de 1 hora), considere saudável a menos que haja evidência de erro nos logs
-4. Examine os eventos em `kubectl describe pod` para entender o fluxo de eventos
-5. Analise os logs para identificar erros, warnings ou padrões de falha
-6. Correlacione as três fontes para determinar a CAUSA RAIZ, não apenas o sintoma
+1. **Critério principal**: O pod é problemático APENAS se o STATUS não for Running (CrashLoopBackOff, ImagePullBackOff, Pending, Error, Failed, etc.)
+2. **Se o STATUS for Running**: O pod é AUTOMATICAMENTE saudável, mesmo que tenha restarts
+3. **Ignore restarts antigos**: Pods Running com restarts de dias atrás são normais e devem ser considerados saudáveis
+4. Só investigue pods não-Running ou pods que estão reiniciando no momento (STATUS indica problema)
+5. Examine os eventos em `kubectl describe pod` para entender o fluxo de eventos
+6. Analise os logs para identificar erros, warnings ou padrões de falha
+7. Correlacione as três fontes para determinar a CAUSA RAIZ, não apenas o sintoma
 
 ## Formato de Saída
 Apresente sua análise no seguinte formato estruturado:
@@ -75,9 +78,9 @@ Exemplo 3 - Pod em Pending:
 
 Exemplo 4 - Cluster saudável:
 - Todos os pods com STATUS Running
-- Sem pods com restarts recentes suspeitos
+- Restarts antigos (dias/horas atrás) são normais e não indicam problema
 - Logs mostram operação normal
-- Conclusão: Nenhum problema
+- Conclusão: Nenhum problema - STATUS Running = saudável, independentemente de restarts antigos
 
 ## Instruções Adicionais
 - Seja conciso e direto. O plantonista precisa de ação rápida.
