@@ -61,65 +61,20 @@ Siga este processo para corrigir o manifesto:
 
 ## Formato de Saída
 
-Produza o manifesto YAML corrigido e endurecido. **IMPORTANTE**: Apenas o YAML puro, sem blocos de código markdown (```yaml ... ```). Comece diretamente com apiVersion.
+Produza UM ÚNICO manifesto YAML corrigido e endurecido. **IMPORTANTE**: 
+- Apenas o YAML puro, sem blocos de código markdown (```yaml ... ```)
+- Comece diretamente com apiVersion
+- TERMINE após o final do manifesto (não use --- para separar documentos)
+- NÃO gere múltiplas políticas, apenas UMA única
 
-**REQUISITOS OBRIGATÓRIOS DO MANIFESTO**:
-- Deve conter "5432" (porta do Forge)
-- Deve conter "9200" (porta do Cerebro)
-- Deve conter "app:relay" (label do Relay)
-- Não deve conter "- {}" (allow-all é proibido)
-- Cada regra deve ter comentário "#"
-
-Exemplo de estrutura (não copie literalmente, use como guia):
-
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: sentinel-network-policy
-  namespace: sentinel-prod
-spec:
-  podSelector:
-    matchLabels:
-      app: sentinel
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              app: relay
-      # Tráfego do Relay (consumo de eventos)
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              app: api-gateway
-      # Tráfego do gateway de API
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              app: forge
-      ports:
-        - protocol: TCP
-          port: 5432
-      # Acesso ao Forge (warehouse, porta 5432)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              app: cerebro
-      ports:
-        - protocol: TCP
-          port: 9200
-      # Acesso ao Cerebro (busca, porta 9200)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - protocol: UDP
-          port: 53
-      # DNS para resolução de nomes
+**REQUISITOS OBRIGATÓRIOS** (deve incluir TODOS no manifesto):
+- "5432" (porta do Forge)
+- "9200" (porta do Cerebro)
+- "app:relay" (label do Relay no namespaceSelector)
+- "app:forge" (label do Forge no namespaceSelector)
+- "app:cerebro" (label do Cerebro no namespaceSelector)
+- Comentários "#" em cada regra
+- NÃO incluir "- {}" (allow-all é proibido)
 
 ## Instruções Adicionais
 - Use EXATAMENTE as labels fornecidas no mapa de serviços - não invente labels
