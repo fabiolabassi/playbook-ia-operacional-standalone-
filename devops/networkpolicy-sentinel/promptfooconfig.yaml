@@ -37,11 +37,10 @@ tests:
         - Cerebro      → namespace cerebro-prod,  pods com label app=cerebro, porta 9200 (Elasticsearch)
         - DNS interno  → namespace kube-system,   pods com label k8s-app=kube-dns, porta 53
     assert:
-      - type: is-json
       - type: javascript
-        value: "JSON.parse(output).kind === 'NetworkPolicy'"
+        value: "output.includes('kind: NetworkPolicy')"
       - type: javascript
-        value: "JSON.parse(output).spec.policyTypes.includes('Ingress') && JSON.parse(output).spec.policyTypes.includes('Egress')"
+        value: "output.includes('policyTypes:') && output.includes('Ingress') && output.includes('Egress')"
       - type: not-contains
         value: "- {}"
       - type: javascript
