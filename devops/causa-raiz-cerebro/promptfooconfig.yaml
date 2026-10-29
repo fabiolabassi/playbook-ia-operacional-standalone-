@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - openai:gpt-4.1-nano
+  - openai:gpt-4o-mini
 
 tests:
   - vars:
