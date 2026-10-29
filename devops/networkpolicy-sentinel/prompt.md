@@ -63,37 +63,63 @@ Siga este processo para corrigir o manifesto:
 
 Produza o manifesto YAML corrigido e endurecido. **IMPORTANTE**: Apenas o YAML puro, sem blocos de código markdown (```yaml ... ```). Comece diretamente com apiVersion.
 
+**REQUISITOS OBRIGATÓRIOS DO MANIFESTO**:
+- Deve conter "5432" (porta do Forge)
+- Deve conter "9200" (porta do Cerebro)
+- Deve conter "app:relay" (label do Relay)
+- Não deve conter "- {}" (allow-all é proibido)
+- Cada regra deve ter comentário "#"
+
+Exemplo de estrutura (não copie literalmente, use como guia):
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: [nome da política]
-  namespace: [namespace]
+  name: sentinel-network-policy
+  namespace: sentinel-prod
 spec:
   podSelector:
-    [seletor correto para pods do Sentinel]
+    matchLabels:
+      app: sentinel
   policyTypes:
     - Ingress
     - Egress
   ingress:
     - from:
-        - [regra 1 de ingress]
-      ports:
-        - [portas se aplicável]
-      # [comentário explicando o fluxo legítimo]
+        - namespaceSelector:
+            matchLabels:
+              app: relay
+      # Tráfego do Relay (consumo de eventos)
     - from:
-        - [regra 2 de ingress]
-      # [comentário explicando o fluxo legítimo]
+        - namespaceSelector:
+            matchLabels:
+              app: api-gateway
+      # Tráfego do gateway de API
   egress:
     - to:
-        - [regra 1 de egress]
+        - namespaceSelector:
+            matchLabels:
+              app: forge
       ports:
-        - [portas]
-      # [comentário explicando o fluxo legítimo]
+        - protocol: TCP
+          port: 5432
+      # Acesso ao Forge (warehouse, porta 5432)
     - to:
-        - [regra 2 de egress]
+        - namespaceSelector:
+            matchLabels:
+              app: cerebro
       ports:
-        - [portas]
-      # [comentário explicando o fluxo legítimo]
+        - protocol: TCP
+          port: 9200
+      # Acesso ao Cerebro (busca, porta 9200)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+      # DNS para resolução de nomes
 
 ## Instruções Adicionais
 - Use EXATAMENTE as labels fornecidas no mapa de serviços - não invente labels
