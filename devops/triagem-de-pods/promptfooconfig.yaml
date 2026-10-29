@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - groq:llama3-70b-8192
+  - groq:llama-3.3-70b-versatile
 
 tests:
   - vars:
