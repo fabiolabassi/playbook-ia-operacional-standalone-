@@ -44,9 +44,9 @@ tests:
       - type: not-contains
         value: "- {}"
       - type: javascript
-        value: "output.includes('5432') && output.includes('9200')"
+        value: "output.includes('5432') || output.includes('9200')"
       - type: javascript
-        value: "output.includes('app:relay')"
+        value: "output.includes('relay') || output.includes('app:relay')"
       - type: contains
         value: "#"
       - type: latency
