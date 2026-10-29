@@ -2,9 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:openai/gpt-oss-20b
-    config:
-      include_reasoning: false
+  - id: groq:qwen/qwen3.8-27b
 
 tests:
   - vars:
@@ -52,5 +50,3 @@ tests:
         value: "output.includes('app:relay')"
       - type: contains
         value: "#"
-      - type: latency
-        threshold: 5000

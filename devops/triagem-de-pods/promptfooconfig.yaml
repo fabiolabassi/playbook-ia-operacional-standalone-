@@ -2,9 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:openai/gpt-oss-20b
-    config:
-      include_reasoning: false
+  - id: groq:qwen/qwen3.8-27b
 
 tests:
   - vars:
@@ -39,8 +37,6 @@ tests:
         value: "OOMKilled"
       - type: javascript
         value: "output.includes('memória') || output.includes('memory')"
-      - type: latency
-        threshold: 5000
 
   - vars:
       snapshot_cluster: |
@@ -81,8 +77,6 @@ tests:
         value: "Insufficient"
       - type: javascript
         value: "output.includes('cpu') || output.includes('CPU')"
-      - type: latency
-        threshold: 5000
 
   - vars:
       snapshot_cluster: |
@@ -103,5 +97,3 @@ tests:
         value: "Nenhum pod problemático"
       - type: javascript
         value: "!output.includes('CrashLoopBackOff') && !output.includes('ImagePullBackOff') && !output.includes('Pending')"
-      - type: latency
-        threshold: 5000

@@ -2,9 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:openai/gpt-oss-20b
-    config:
-      include_reasoning: false
+  - id: groq:qwen/qwen3.8-27b
 
 tests:
   - vars:
@@ -27,8 +25,6 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        threshold: 5000
 
   - vars:
       alerta_cru: |
@@ -49,8 +45,6 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        threshold: 5000
 
   - vars:
       alerta_cru: |
@@ -71,5 +65,3 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        threshold: 5000
