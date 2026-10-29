@@ -15,11 +15,46 @@ Repositório contendo prompts de operação para o sistema Aegis, validados com 
 │   │   ├── promptfooconfig.yaml
 │   │   └── README.md
 │   ├── triagem-de-pods/
+│   │   ├── prompt.md
+│   │   ├── promptfooconfig.yaml
+│   │   └── README.md
 │   ├── networkpolicy-sentinel/
+│   │   ├── prompt.md
+│   │   ├── promptfooconfig.yaml
+│   │   └── README.md
 │   ├── causa-raiz-cerebro/
-│   └── ...
+│   │   ├── prompt.md
+│   │   ├── promptfooconfig.yaml
+│   │   └── README.md
+│   ├── backpressure-relay/
+│   │   ├── prompt.md
+│   │   └── README.md
+│   ├── migracao-forge-diagnostico/
+│   │   ├── prompt.md
+│   │   └── README.md
+│   ├── migracao-forge-planejamento/
+│   │   ├── prompt.md
+│   │   └── README.md
+│   ├── migracao-forge-execucao/
+│   │   ├── prompt.md
+│   │   └── README.md
+│   └── README.md
+├── run-tests.sh
 └── README.md
 ```
+
+## Compatibilidade com prompt-registry
+
+O repositório foi organizado seguindo as convenções do template `prompt-registry`:
+
+- categoria por domínio em pasta raiz (`devops/`)
+- um prompt por diretório, nomeado pelo resultado e não pela técnica
+- `prompt.md` contendo frontmatter + prompt parametrizável com `{{variavel}}`
+- `README.md` com documentação humana (objetivo, uso, exemplo, limitações)
+- versionamento semver por prompt (`versao: 1.0.0`)
+- parâmetros documentados em `inputs` no frontmatter, alinhados aos placeholders do prompt
+
+Essa estrutura permite que cada prompt seja tratado como artefato versionado, revisado e testado, em vez de texto solto no histórico do chat.
 
 ## Como Rodar os Testes Localmente
 
