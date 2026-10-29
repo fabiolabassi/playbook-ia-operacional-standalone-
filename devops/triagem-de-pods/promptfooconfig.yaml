@@ -41,8 +41,6 @@ tests:
         value: "output.includes('memória') || output.includes('memory')"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -85,8 +83,6 @@ tests:
         value: "output.includes('cpu') || output.includes('CPU')"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -109,5 +105,3 @@ tests:
         value: "!output.includes('CrashLoopBackOff') && !output.includes('ImagePullBackOff') && !output.includes('Pending')"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01

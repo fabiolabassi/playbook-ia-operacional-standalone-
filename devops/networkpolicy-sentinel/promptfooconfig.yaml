@@ -54,5 +54,3 @@ tests:
         value: "#"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01

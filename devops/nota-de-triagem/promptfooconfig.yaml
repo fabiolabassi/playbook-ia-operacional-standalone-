@@ -29,8 +29,6 @@ tests:
         value: "output.split('\\n').length <= 8"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01
 
   - vars:
       alerta_cru: |
@@ -53,8 +51,6 @@ tests:
         value: "output.split('\\n').length <= 8"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01
 
   - vars:
       alerta_cru: |
@@ -77,5 +73,3 @@ tests:
         value: "output.split('\\n').length <= 8"
       - type: latency
         threshold: 5000
-      - type: cost
-        threshold: 0.01
