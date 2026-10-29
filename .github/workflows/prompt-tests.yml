@@ -3,8 +3,14 @@ name: Prompt Tests
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'devops/**'
+      - '.github/workflows/prompt-tests.yml'
   push:
     branches: [main]
+    paths:
+      - 'devops/**'
+      - '.github/workflows/prompt-tests.yml'
   workflow_dispatch:
 
 jobs:
@@ -20,6 +26,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Validate OpenAI secret
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY is not configured."
+            exit 1
+          fi
 
       - name: Install promptfoo
         run: npm install -g promptfoo
