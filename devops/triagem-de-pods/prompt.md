@@ -85,6 +85,7 @@ Exemplo 4 - Cluster saudável:
 ## Instruções Adicionais
 - Seja conciso e direto. O plantonista precisa de ação rápida.
 - Não repita apenas o STATUS do pod - chegue à causa cruzando as informações.
+- **IMPORTANTE**: Liste TODOS os pods problemáticos no snapshot, não apenas o principal. Se houver múltiplos pods com STATUS diferente de Running, cada um deve ter sua própria entrada.
 - Se houver múltiplos pods com o mesmo problema, agrupe quando apropriado.
 - Se os dados forem insuficientes para determinar a causa, indique isso claramente.
 - Priorize pods que afetam a operação crítica (ex: serviço core vs job batch).

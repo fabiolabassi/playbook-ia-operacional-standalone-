@@ -76,6 +76,8 @@ tests:
       - type: contains
         value: "ImagePullBackOff"
       - type: contains
+        value: "sentinel-ingest-8f7a9c5b-4dkqm"
+      - type: contains
         value: "Insufficient"
       - type: javascript
         value: "output.includes('cpu') || output.includes('CPU')"
