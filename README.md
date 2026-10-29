@@ -27,7 +27,7 @@ Repositório contendo prompts de operação para o sistema Aegis, validados com 
 
 1. Node.js 20+
 2. npm
-3. Chaves de API (OPENAI_API_KEY e ANTHROPIC_API_KEY)
+3. Chave de API (OPENAI_API_KEY)
 
 ### Instalação
 
@@ -52,10 +52,9 @@ promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml --output-file r
 
 ### Secrets Necessários
 
-Configure os seguintes secrets no repositório GitHub (Settings → Secrets and variables → Actions):
+Configure o seguinte secret no repositório GitHub (Settings → Secrets and variables → Actions):
 
 - `OPENAI_API_KEY`: Chave da API da OpenAI
-- `ANTHROPIC_API_KEY`: Chave da API da Anthropic
 
 ### Workflow
 

@@ -36,16 +36,7 @@ if [ -z "$OPENAI_API_KEY" ]; then
     echo "AVISO: OPENAI_API_KEY não configurada. Configure com:"
     echo "  export OPENAI_API_KEY=sk-..."
     echo ""
-fi
-
-if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "AVISO: ANTHROPIC_API_KEY não configurada. Configure com:"
-    echo "  export ANTHROPIC_API_KEY=sk-ant-..."
-    echo ""
-fi
-
-if [ -z "$OPENAI_API_KEY" ] || [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "Deseja continuar sem as chaves de API? (y/N)"
+    echo "Deseja continuar sem a chave de API? (y/N)"
     read -r response
     if [[ ! "$response" =~ ^[Yy]$ ]]; then
         exit 1

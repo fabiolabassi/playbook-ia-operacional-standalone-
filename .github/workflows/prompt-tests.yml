@@ -28,25 +28,21 @@ jobs:
         run: promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml --output-file results/nota-de-triagem.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Run tests for triagem-de-pods
         run: promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml --output-file results/triagem-de-pods.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Run tests for networkpolicy-sentinel
         run: promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml --output-file results/networkpolicy-sentinel.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Run tests for causa-raiz-cerebro
         run: promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml --output-file results/causa-raiz-cerebro.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Comment results on PR
         if: github.event_name == 'pull_request'

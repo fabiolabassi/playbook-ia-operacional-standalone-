@@ -3,7 +3,6 @@ prompts:
 
 providers:
   - openai:gpt-4o-mini
-  - anthropic:claude-3-5-sonnet-20241022
 
 tests:
   - vars:
