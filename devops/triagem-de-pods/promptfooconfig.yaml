@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:llama3-8b-8192
+  - id: groq:openai/gpt-oss-20b
 
 tests:
   - vars:
