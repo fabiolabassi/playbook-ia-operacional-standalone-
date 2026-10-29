@@ -46,6 +46,7 @@ Siga este processo para corrigir o manifesto:
 ### 4. Adicionar regras de egress permitidas
 - Use o mapa de serviços para identificar para onde os pods do Sentinel podem falar
 - Use os labels corretos e as portas especificadas
+- **INCLUA OBRIGATORIAMENTE**: Forge na porta 5432 e Cerebro na porta 9200
 - Inclua DNS (kube-dns) para resolução de nomes
 - Cada regra deve ter um comentário explicando qual fluxo legítimo ela libera
 
