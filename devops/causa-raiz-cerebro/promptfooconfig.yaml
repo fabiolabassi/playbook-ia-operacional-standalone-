@@ -50,15 +50,18 @@ tests:
     assert:
       - type: llm-rubric
         value: |
-          Causa-raiz correta — aponta a causa real (a reindexação travada saturando o heap, levando a circuit breaker, timeouts de busca e queda do cache), e não apenas os sintomas.
-          Correlação × causa — separa o que é causa do que é consequência (ex.: o cache hit caindo é efeito, não causa).
-          Ação proporcional — propõe uma ação coerente com o diagnóstico (ex: conter ou reagendar a reindexação, rever heap/limites), sem sobre nem subdimensionar.
-          Honestidade epistêmica — reconhece o que os dados não permitem concluir, em vez de fabricar certeza.
-
-          Critério de aprovação: nota total ≥ 6 e nenhum critério zerado.
-
-          Output apenas a nota total (0-8) e uma breve justificativa (1-2 frases).
+          Avalie a saída da análise de causa-raiz usando estes critérios, em escala 0-2 cada:
+          1) Causa-raiz correta: aponta a reindexação travada como causa primária e não só sintomas.
+          2) Correlação causa vs consequência: separa causa de efeito (cache, circuit breaker, latência, timeouts).
+          3) Ação proporcional: sugere ação coerente com a causa (reagendar ou rebaixar a reindexação; rever heap/limites).
+          4) Honestidade epistêmica: reconoce limites e não inventa certezas.
+          Regras:
+          - total máximo = 8
+          - aprovação = score >= 6 e nenhum critério zerado
+          - responda apenas em uma linha: score=<0-8>; rationale=<até 18 palavras>
         threshold: 6
+      - type: regex
+        value: "score=([0-8])"
       - type: latency
         threshold: 5000
       - type: cost
