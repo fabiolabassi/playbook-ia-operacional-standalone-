@@ -50,37 +50,15 @@ tests:
     assert:
       - type: llm-rubric
         value: |
-          Avalie a saída da análise de causa-raiz em quatro critérios, cada um numa escala de 0 a 2 (0 = não atende, 1 = parcial, 2 = atende), total de 0 a 8:
-
-          Critério 1 - Causa-raiz correta:
-          - 2 pontos: Aponta a causa real (a reindexação travada saturando o heap, levando a circuit breaker, timeouts de busca e queda do cache), e não apenas os sintomas
-          - 1 ponto: Identifica parcialmente a causa (ex: menciona reindexação mas não conecta todos os pontos ou foca em sintoma secundário)
-          - 0 pontos: Lista apenas sintomas (ex: "heap alto", "cache caindo", "timeouts") sem identificar a causa primária
-
-          Critério 2 - Correlação × causa:
-          - 2 pontos: Separa claramente o que é causa do que é consequência (ex: o cache hit caindo é efeito, não causa; circuit breaker disparando é efeito, não causa)
-          - 1 ponto: Distingue parcialmente causa de consequência, mas há alguma confusão ou mistura
-          - 0 pontos: Não distingue causa de consequência, trata tudo como sintomas ou causa indistintamente
-
-          Critério 3 - Ação proporcional:
-          - 2 pontos: Propõe uma ação coerente com o diagnóstico (ex: conter ou reagendar a reindexação, rever heap/limites), sem sobre nem subdimensionar
-          - 1 ponto: Propõe ação relacionada mas não ideal (ex: "aumentar heap" sem conter reindexação, ou "pausar cache" que não endereça causa)
-          - 0 pontos: Propõe ação desconexa do diagnóstico (ex: "reiniciar cluster", "limpar logs") ou nenhuma ação
-
-          Critério 4 - Honestidade epistêmica:
-          - 2 pontos: Reconhece explicitamente o que os dados não permitem concluir (ex: não sabe POR QUE a reindexação está travada)
-          - 1 ponto: Reconhece parcialmente limitações ou usa linguagem cautelosa em alguns pontos
-          - 0 pontos: Afirma com certeza coisas que os dados não suportam (ex: "o problema é lock no shard 7" sem evidência)
+          Causa-raiz correta — aponta a causa real (a reindexação travada saturando o heap, levando a circuit breaker, timeouts de busca e queda do cache), e não apenas os sintomas.
+          Correlação × causa — separa o que é causa do que é consequência (ex.: o cache hit caindo é efeito, não causa).
+          Ação proporcional — propõe uma ação coerente com o diagnóstico (ex: conter ou reagendar a reindexação, rever heap/limites), sem sobre nem subdimensionar.
+          Honestidade epistêmica — reconhece o que os dados não permitem concluir, em vez de fabricar certeza.
 
           Critério de aprovação: nota total ≥ 6 e nenhum critério zerado.
 
           Output apenas a nota total (0-8) e uma breve justificativa (1-2 frases).
-      - type: javascript
-        value: |
-          const rubricOutput = output;
-          const scoreMatch = rubricOutput.match(/nota total[:\s]*(\d+)/i);
-          const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-          score >= 6;
+        threshold: 6
       - type: latency
         threshold: 5000
       - type: cost
