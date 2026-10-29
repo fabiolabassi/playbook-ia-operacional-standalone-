@@ -39,21 +39,29 @@ jobs:
         run: npm install -g promptfoo
 
       - name: Run tests for nota-de-triagem
+        id: nota-de-triagem
+        continue-on-error: true
         run: promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Run tests for triagem-de-pods
+        id: triagem-de-pods
+        continue-on-error: true
         run: promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Run tests for networkpolicy-sentinel
+        id: networkpolicy-sentinel
+        continue-on-error: true
         run: promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Run tests for causa-raiz-cerebro
+        id: causa-raiz-cerebro
+        continue-on-error: true
         run: promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -77,32 +85,49 @@ jobs:
 
             for (const prompt of prompts) {
               const filePath = `${resultsDir}/${prompt.file}`;
-              if (fs.existsSync(filePath)) {
-                const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                const results = data.results;
 
-                let passCount = 0;
-                let failCount = 0;
+              if (!fs.existsSync(filePath)) {
+                comment += `### ${prompt.name}: SKIPPED (no output file)\n\n`;
+                continue;
+              }
 
-                for (const result of results) {
-                  if (result.success) {
-                    passCount++;
-                  } else {
-                    failCount++;
-                  }
+              let data;
+              try {
+                data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+              } catch (error) {
+                comment += `### ${prompt.name}: ERROR (JSON inválido)\n\n`;
+                continue;
+              }
+
+              const rawResults = data && data.results;
+              const results = Array.isArray(rawResults)
+                ? rawResults
+                : (rawResults && typeof rawResults === 'object'
+                    ? Object.values(rawResults)
+                    : []);
+
+              let passCount = 0;
+              let failCount = 0;
+
+              for (const result of results) {
+                if (result && result.success) {
+                  passCount++;
+                } else {
+                  failCount++;
                 }
+              }
 
-                const status = failCount === 0 ? 'PASS' : 'FAIL';
-                comment += `### ${prompt.name}: ${status} (${passCount}/${passCount + failCount})\n\n`;
+              const status = failCount === 0 ? 'PASS' : 'FAIL';
+              comment += `### ${prompt.name}: ${status} (${passCount}/${passCount + failCount})\n\n`;
 
-                if (failCount > 0) {
-                  comment += '**Failed tests:**\n';
-                  for (const result of results) {
-                    if (!result.success) {
-                      comment += `- Test: ${result.prompt?.label || result.description}\n`;
-                      comment += `  Error: ${result.error || 'Assert failed'}\n\n`;
-                    }
-                  }
+              if (failCount > 0) {
+                comment += '**Failed tests:**\n';
+                for (const result of results) {
+                  if (!result || result.success) continue;
+                  const label = result.prompt?.label || result.description || 'unknown';
+                  const err = result.error || 'Assert failed';
+                  comment += `- Test: ${label}\n`;
+                  comment += `  Error: ${err}\n\n`;
                 }
               }
             }
@@ -117,6 +142,7 @@ jobs:
             });
 
       - name: Upload results as artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prompt-test-results
