@@ -39,14 +39,15 @@ Siga este processo para corrigir o manifesto:
 
 ### 3. Adicionar regras de ingress permitidas
 - Use o mapa de serviços para identificar quais serviços podem falar com os pods do Sentinel
+- **INCLUA OBRIGATORIAMENTE**: Relays com label app:relay
 - Use os labels corretos (ex: app=relay, não invente labels)
 - Especifique as portas corretas se aplicável
 - Cada regra deve ter um comentário explicando qual fluxo legítimo ela libera
 
 ### 4. Adicionar regras de egress permitidas
 - Use o mapa de serviços para identificar para onde os pods do Sentinel podem falar
-- Use os labels corretos e as portas especificadas
 - **INCLUA OBRIGATORIAMENTE**: Forge na porta 5432 e Cerebro na porta 9200
+- Use os labels corretos e as portas especificadas
 - Inclua DNS (kube-dns) para resolução de nomes
 - Cada regra deve ter um comentário explicando qual fluxo legítimo ela libera
 
