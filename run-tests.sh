@@ -32,9 +32,9 @@ fi
 echo "✓ promptfoo encontrado"
 
 # Verificar chaves de API
-if [ -z "$OPENAI_API_KEY" ]; then
-    echo "AVISO: OPENAI_API_KEY não configurada. Configure com:"
-    echo "  export OPENAI_API_KEY=sk-..."
+if [ -z "$GROQ_API_KEY" ]; then
+    echo "AVISO: GROQ_API_KEY não configurada. Configure com:"
+    echo "  export GROQ_API_KEY=gsk_..."
     echo ""
     echo "Deseja continuar sem a chave de API? (y/N)"
     read -r response
