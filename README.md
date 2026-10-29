@@ -56,6 +56,16 @@ O repositório foi organizado seguindo as convenções do template `prompt-regis
 
 Essa estrutura permite que cada prompt seja tratado como artefato versionado, revisado e testado, em vez de texto solto no histórico do chat.
 
+## Compatibilidade com prompt-registry
+
+Este repositório foi organizado seguindo as convenções do template prompt-registry:
+- categoria por domínio em pasta raiz (`devops/`)
+- um prompt por diretório
+- `prompt.md` com frontmatter + placeholders `{{variavel}}`
+- `README.md` com documentação humana
+- versionamento semver por prompt (`versao: 1.0.0`)
+- `inputs` documentando os parâmetros usados
+
 ## Como Rodar os Testes Localmente
 
 ### Pré-requisitos
@@ -116,7 +126,4 @@ Após rodar os testes (localmente ou via GitHub Actions), registre os resultados
 - `checkpoint-08/entrega.md` - Testes determinísticos
 - `checkpoint-09/entrega.md` - LLM-as-judge
 - `checkpoint-10/entrega.md` - Pipeline em produção
-
-## Licença
-
-Este repositório faz parte do material didático da pós-graduação em AIOps e Inteligência Artificial com Engenharia Cloud.
+- 
