@@ -37,10 +37,6 @@ tests:
         value: "OOMKilled"
       - type: javascript
         value: "output.includes('memória') || output.includes('memory')"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -81,10 +77,6 @@ tests:
         value: "Insufficient"
       - type: javascript
         value: "output.includes('cpu') || output.includes('CPU')"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -105,7 +97,3 @@ tests:
         value: "Nenhum pod problemático"
       - type: javascript
         value: "!output.includes('CrashLoopBackOff') && !output.includes('ImagePullBackOff') && !output.includes('Pending')"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01

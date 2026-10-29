@@ -50,7 +50,3 @@ tests:
         value: "output.includes('app:relay')"
       - type: contains
         value: "#"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01

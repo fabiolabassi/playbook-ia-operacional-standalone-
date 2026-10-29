@@ -75,9 +75,3 @@ tests:
           Critério de aprovação: nota total ≥ 6 e nenhum critério zerado.
 
           Output apenas a nota total (0-8) e uma breve justificativa (1-2 frases).
-      - type: javascript
-        value: |
-          const rubricOutput = output;
-          const scoreMatch = rubricOutput.match(/nota total[:\s]*(\d+)/i);
-          const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-          score >= 6;

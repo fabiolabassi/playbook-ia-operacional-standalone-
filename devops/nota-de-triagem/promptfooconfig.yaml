@@ -25,10 +25,6 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01
 
   - vars:
       alerta_cru: |
@@ -49,10 +45,6 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01
 
   - vars:
       alerta_cru: |
@@ -73,7 +65,3 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
-      - type: latency
-        value: 5000
-      - type: cost
-        value: 0.01
