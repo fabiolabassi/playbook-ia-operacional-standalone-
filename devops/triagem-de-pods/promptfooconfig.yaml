@@ -96,4 +96,4 @@ tests:
       - type: contains
         value: "Nenhum pod problemático"
       - type: javascript
-        value: "!output.includes('CrashLoopBackOff') && !output.includes('ImagePullBackOff') && !output.includes('Pending')"
+        value: "!output.includes('sentinel-api-7d9c8b6f4-2xk9p') && !output.includes('sentinel-api-7d9c8b6f4-h4m2t') && !output.includes('sentinel-worker-5b8f9c8d-jq7rs') && !output.includes('sentinel-scheduler-6c4d7f-nn8vx')"

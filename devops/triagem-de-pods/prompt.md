@@ -20,12 +20,12 @@ O snapshot contém:
 
 ## Seu Raciocínio
 Para cada pod identificado como problemático:
-1. Verifique o STATUS e o número de RESTARTS em `kubectl get pods`
-2. Examine os eventos em `kubectl describe pod` para entender o fluxo de eventos
-3. Analise os logs para identificar erros, warnings ou padrões de falha
-4. Correlacione as três fontes para determinar a CAUSA RAIZ, não apenas o sintoma
-5. Se o STATUS for Running mas com restarts recentes, investigue por que reiniciou
-6. Se o STATUS indicar falha (CrashLoopBackOff, ImagePullBackOff, Pending, etc.), identifique o motivo específico
+1. **Critério principal**: O pod é problemático se o STATUS não for Running (CrashLoopBackOff, ImagePullBackOff, Pending, Error, etc.)
+2. Se o STATUS for Running, só considere problemático se houver restarts **muito recentes** (últos minutos, não dias)
+3. Para pods com STATUS Running e restarts antigos (mais de 1 hora), considere saudável a menos que haja evidência de erro nos logs
+4. Examine os eventos em `kubectl describe pod` para entender o fluxo de eventos
+5. Analise os logs para identificar erros, warnings ou padrões de falha
+6. Correlacione as três fontes para determinar a CAUSA RAIZ, não apenas o sintoma
 
 ## Formato de Saída
 Apresente sua análise no seguinte formato estruturado:
@@ -49,6 +49,8 @@ Se não houver pods problemáticos, indique claramente:
 
 ### STATUS
 Nenhum pod problemático identificado. Cluster em estado saudável.
+
+**IMPORTANTE**: NÃO liste pods sob "PODS PROBLEMÁTICOS" quando o cluster estiver saudável. Se todos os pods estiverem Running sem problemas, a seção "PODS PROBLEMÁTICOS" deve ficar vazia.
 
 ## Exemplos de Análise
 
