@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:llama-3.3-8b-instant
+  - id: groq:llama3-8b-8192
 
 tests:
   - vars:
