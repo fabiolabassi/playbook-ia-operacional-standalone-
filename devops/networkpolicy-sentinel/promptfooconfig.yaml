@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:qwen/qwen3.8-27b
+  - openai:gpt-4o-mini
 
 tests:
   - vars:
@@ -50,3 +50,7 @@ tests:
         value: "output.includes('app:relay')"
       - type: contains
         value: "#"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

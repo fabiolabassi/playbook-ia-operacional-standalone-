@@ -27,7 +27,7 @@ Repositório contendo prompts de operação para o sistema Aegis, validados com 
 
 1. Node.js 20+
 2. npm
-3. Chave de API (GROQ_API_KEY)
+3. Chave de API (OPENAI_API_KEY)
 
 ### Instalação
 
@@ -54,7 +54,7 @@ promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/caus
 
 Configure o seguinte secret no repositório GitHub (Settings → Secrets and variables → Actions):
 
-- `GROQ_API_KEY`: Chave da API do Groq (gratuita em https://console.groq.com/keys)
+- `OPENAI_API_KEY`: Chave da API da OpenAI (disponível em https://platform.openai.com/api-keys)
 
 ### Workflow
 

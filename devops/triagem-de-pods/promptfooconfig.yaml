@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:qwen/qwen3.8-27b
+  - openai:gpt-4o-mini
 
 tests:
   - vars:
@@ -37,6 +37,10 @@ tests:
         value: "OOMKilled"
       - type: javascript
         value: "output.includes('memória') || output.includes('memory')"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -77,6 +81,10 @@ tests:
         value: "Insufficient"
       - type: javascript
         value: "output.includes('cpu') || output.includes('CPU')"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
 
   - vars:
       snapshot_cluster: |
@@ -97,3 +105,7 @@ tests:
         value: "Nenhum pod problemático"
       - type: javascript
         value: "!output.includes('sentinel-api-7d9c8b6f4-2xk9p') && !output.includes('sentinel-api-7d9c8b6f4-h4m2t') && !output.includes('sentinel-worker-5b8f9c8d-jq7rs') && !output.includes('sentinel-scheduler-6c4d7f-nn8vx')"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

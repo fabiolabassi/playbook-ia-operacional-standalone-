@@ -2,7 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:qwen/qwen3.8-27b
+  - openai:gpt-4o-mini
 
 tests:
   - vars:
@@ -25,6 +25,10 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
 
   - vars:
       alerta_cru: |
@@ -45,6 +49,10 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
 
   - vars:
       alerta_cru: |
@@ -65,3 +73,7 @@ tests:
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
         value: "output.split('\\n').length <= 8"
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

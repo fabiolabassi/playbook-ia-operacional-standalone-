@@ -2,9 +2,7 @@ prompts:
   - file://prompt.md
 
 providers:
-  - id: groq:openai/gpt-oss-20b
-    config:
-      include_reasoning: false
+  - openai:gpt-4o-mini
 
 tests:
   - vars:
@@ -83,3 +81,7 @@ tests:
           const scoreMatch = rubricOutput.match(/nota total[:\s]*(\d+)/i);
           const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
           score >= 6;
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01
