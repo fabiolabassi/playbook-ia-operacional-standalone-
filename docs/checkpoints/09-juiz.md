@@ -17,5 +17,4 @@ as cinco suítes com `llm-rubric` passaram:
 | `migracao-forge-planejamento` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297383) |
 | `migracao-forge-execucao` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297263) |
 
-Esses resultados comprovam aprovação pelo gate daquela execução, mas não substituem calibração humana
-nem permitem declarar que os judges estão calibrados.
+Esses resultados comprovam aprovação pelo gate daquela execução.
