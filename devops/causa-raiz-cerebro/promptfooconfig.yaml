@@ -50,18 +50,15 @@ tests:
     assert:
       - type: llm-rubric
         value: |
-          Avalie a saída da análise de causa-raiz usando estes critérios, em escala 0-2 cada:
-          1) Causa-raiz correta: aponta a reindexação travada como causa primária e não só sintomas.
-          2) Correlação causa vs consequência: separa causa de efeito (cache, circuit breaker, latência, timeouts).
-          3) Ação proporcional: sugere ação coerente com a causa (reagendar ou rebaixar a reindexação; rever heap/limites).
-          4) Honestidade epistêmica: reconhece limites e não inventa certezas.
-          Regras:
-          - total máximo = 8
-          - aprovação = score >= 6 e nenhum critério zerado
-          - responda apenas em uma linha: score=<0-8>; rationale=<até 18 palavras>
-        threshold: 6
-      - type: regex
-        value: "^score=([0-8]); rationale=.*$"
+          Faça uma avaliação analítica, atribuindo 0, 1 ou 2 pontos a cada critério e somando até 8:
+          1. Causa-raiz correta: aponta a reindexação atrasada como causa primária provável, relacionada à saturação do heap, ao circuit breaker, aos timeouts e à queda do cache; não lista apenas sintomas.
+          2. Correlação × causa: separa a reindexação e o aumento de carga dos efeitos observados (cache hit em queda, circuit breaker, latência, timeouts e rejeições).
+          3. Ação proporcional: recomenda conter ou reagendar a reindexação, confirmar recuperação e rever heap/limites sem afirmar que aumentar heap sozinho resolve.
+          4. Honestidade epistêmica: reconhece que os dados de um nó não provam causalidade exclusiva nem descartam outras fontes de carga.
+          Dê 0 se o critério estiver ausente ou contradito, 1 se parcial e 2 se bem sustentado por evidência.
+          A aprovação exige total >= 6 E nota diferente de 0 em cada critério. Reprove em caso contrário.
+          Considere exclusivamente a resposta do prompt; não dê pontos por repetir esta rubrica.
+        threshold: 0.75
       - type: latency
         threshold: 5000
       - type: cost

@@ -1,149 +1,148 @@
-name: Prompt Tests
+name: Prompt Evaluation
 
 on:
   pull_request:
-    branches: [main]
-    paths:
-      - 'devops/**'
-      - '.github/workflows/prompt-tests.yml'
   push:
-    branches: [main]
-    paths:
-      - 'devops/**'
-      - '.github/workflows/prompt-tests.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: prompt-evaluation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   prompt-tests:
-    name: Run promptfoo tests
+    name: Evaluate ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - name: nota-de-triagem
+            config: devops/nota-de-triagem/promptfooconfig.yaml
+          - name: triagem-de-pods
+            config: devops/triagem-de-pods/promptfooconfig.yaml
+          - name: causa-raiz-cerebro
+            config: devops/causa-raiz-cerebro/promptfooconfig.yaml
+          - name: backpressure-relay
+            config: devops/backpressure-relay/promptfooconfig.yaml
+          - name: migracao-forge-diagnostico
+            config: devops/migracao-forge-diagnostico/promptfooconfig.yaml
+          - name: migracao-forge-planejamento
+            config: devops/migracao-forge-planejamento/promptfooconfig.yaml
+          - name: migracao-forge-execucao
+            config: devops/migracao-forge-execucao/promptfooconfig.yaml
+          - name: networkpolicy-sentinel
+            config: devops/networkpolicy-sentinel/promptfooconfig.yaml
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - name: Validate OpenAI secret
+      - name: Validate provider secrets
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          test -n "$OPENAI_API_KEY" || { echo "::error::OPENAI_API_KEY is not configured"; exit 1; }
+
+      - name: Cache Promptfoo
+        uses: actions/cache@v4
+        with:
+          path: .promptfoo-cache
+          key: ${{ runner.os }}-promptfoo-${{ matrix.name }}-${{ hashFiles(matrix.config, format('devops/{0}/prompt.md', matrix.name)) }}
+          restore-keys: |
+            ${{ runner.os }}-promptfoo-${{ matrix.name }}-
+
+      - name: Cache Ollama model
+        if: matrix.name == 'nota-de-triagem'
+        uses: actions/cache@v4
+        with:
+          path: ~/.ollama/models
+          key: ${{ runner.os }}-ollama-qwen3-0.6b
+
+      - name: Start Ollama and pull evaluation model
+        if: matrix.name == 'nota-de-triagem'
         shell: bash
         run: |
-          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
-            echo "OPENAI_API_KEY is not configured."
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 &
+          for attempt in {1..30}; do
+            if curl --silent --fail http://localhost:11434/api/tags > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl --silent --fail http://localhost:11434/api/tags > /dev/null || {
+            cat "$RUNNER_TEMP/ollama.log"
+            echo "::error::Ollama did not start"
             exit 1
+          }
+          ollama pull qwen3:0.6b
+
+      - name: Run Promptfoo evaluation and comment on PR
+        uses: promptfoo/promptfoo-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          config: ${{ matrix.config }}
+          use-config-prompts: true
+          force-run: true
+          fail-on-threshold: '100'
+          no-share: true
+          cache-path: .promptfoo-cache
+          max-concurrency: '1'
+          promptfoo-version: '0.125.1'
+
+      - name: Compare changed prompt against base revision
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PROMPTFOO_CACHE_PATH: .promptfoo-cache
+        run: |
+          prompt="devops/${{ matrix.name }}/prompt.md"
+          config="devops/${{ matrix.name }}/promptfooconfig.yaml"
+          base="$BASE_SHA"
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            base="$(git rev-parse HEAD^ 2>/dev/null || true)"
+          fi
+          if [ -z "$base" ] || ! git cat-file -e "$base:$prompt" 2>/dev/null; then
+            echo "No prior prompt revision is available; absolute quality gates still apply."
+            exit 0
+          fi
+          if git diff --quiet "$base" "$GITHUB_SHA" -- "$prompt" "$config"; then
+            echo "Prompt and evaluation contract are unchanged; base comparison skipped."
+            exit 0
           fi
 
-      - name: Install promptfoo
-        run: npm install -g promptfoo
+          baseline_dir="$(mktemp -d)"
+          git show "$base:$prompt" > "$baseline_dir/prompt.md"
+          cp "$config" "$baseline_dir/promptfooconfig.yaml"
+          head_result="$RUNNER_TEMP/${{ matrix.name }}-head.json"
+          base_result="$RUNNER_TEMP/${{ matrix.name }}-base.json"
 
-      - name: Run tests for nota-de-triagem
-        id: nota-de-triagem
-        continue-on-error: true
-        run: promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Run tests for triagem-de-pods
-        id: triagem-de-pods
-        continue-on-error: true
-        run: promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Run tests for networkpolicy-sentinel
-        id: networkpolicy-sentinel
-        continue-on-error: true
-        run: promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Run tests for causa-raiz-cerebro
-        id: causa-raiz-cerebro
-        continue-on-error: true
-        run: promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Comment results on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const resultsDir = 'results';
-
-            let comment = '## Prompt Test Results\n\n';
-
-            const prompts = [
-              { name: 'nota-de-triagem', file: 'nota-de-triagem.json' },
-              { name: 'triagem-de-pods', file: 'triagem-de-pods.json' },
-              { name: 'networkpolicy-sentinel', file: 'networkpolicy-sentinel.json' },
-              { name: 'causa-raiz-cerebro', file: 'causa-raiz-cerebro.json' }
-            ];
-
-            for (const prompt of prompts) {
-              const filePath = `${resultsDir}/${prompt.file}`;
-
-              if (!fs.existsSync(filePath)) {
-                comment += `### ${prompt.name}: SKIPPED (no output file)\n\n`;
-                continue;
-              }
-
-              let data;
-              try {
-                data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-              } catch (error) {
-                comment += `### ${prompt.name}: ERROR (JSON inválido)\n\n`;
-                continue;
-              }
-
-              const rawResults = data && data.results;
-              const results = Array.isArray(rawResults)
-                ? rawResults
-                : (rawResults && typeof rawResults === 'object'
-                    ? Object.values(rawResults)
-                    : []);
-
-              let passCount = 0;
-              let failCount = 0;
-
-              for (const result of results) {
-                if (result && result.success) {
-                  passCount++;
-                } else {
-                  failCount++;
-                }
-              }
-
-              const status = failCount === 0 ? 'PASS' : 'FAIL';
-              comment += `### ${prompt.name}: ${status} (${passCount}/${passCount + failCount})\n\n`;
-
-              if (failCount > 0) {
-                comment += '**Failed tests:**\n';
-                for (const result of results) {
-                  if (!result || result.success) continue;
-                  const label = result.prompt?.label || result.description || 'unknown';
-                  const err = result.error || 'Assert failed';
-                  comment += `- Test: ${label}\n`;
-                  comment += `  Error: ${err}\n\n`;
-                }
-              }
-            }
-
-            comment += '\n---\n\n*Generated by promptfoo*';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-      - name: Upload results as artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: prompt-test-results
-          path: results/
+          if npx --yes promptfoo@0.125.1 eval -c "$config" --no-share --no-table -j 1 -o "$head_result"; then
+            echo "Head evaluation completed."
+          else
+            echo "Head evaluation reported failures; comparing its result with the base."
+          fi
+          if npx --yes promptfoo@0.125.1 eval -c "$baseline_dir/promptfooconfig.yaml" --no-share --no-table -j 1 -o "$base_result"; then
+            echo "Base evaluation completed."
+          else
+            echo "Base evaluation reported failures; comparing its result with the head."
+          fi
+          test -s "$head_result" || { echo "::error::Head evaluation did not produce a report"; exit 1; }
+          test -s "$base_result" || { echo "::error::Base evaluation did not produce a report"; exit 1; }
+          node .github/scripts/compare-evals.cjs "$base_result" "$head_result"

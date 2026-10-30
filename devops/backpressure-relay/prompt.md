@@ -1,7 +1,7 @@
 ---
 nome: Análise de Estratégia de Backpressure
 descricao: Compara múltiplas abordagens de backpressure para o Relay, pesando prós e contras antes de recomendar
-versao: 1.0.0
+versao: 1.1.0
 tags: [backpressure, arquitetura, decisao, trade-offs]
 inputs:
   - nome: cenario_relay
@@ -100,7 +100,7 @@ Apresente sua análise no seguinte formato:
 
 ## Instruções Adicionais
 - Não pule para a recomendação - mostre o trabalho de comparação.
-- Seja específico ao avaliar custo: "requer X instâncias adicionais de tipo Y, custo estimado de $Z/mês".
+- Seja específico ao avaliar custo. Se o provedor, preços e perfil de carga não foram fornecidos, não invente valores monetários nem quantidades de instâncias; indique quais medições e cotações faltam e avalie o impacto qualitativamente.
 - Seja honesto sobre trade-offs: toda solução tem prós e contras.
 - Se mais de uma abordagem for defensável, discuta as duas e justifique sua escolha.
 - A recomendação deve ser algo que o time pode implementar com esforço razoável (não um rewrite completo).

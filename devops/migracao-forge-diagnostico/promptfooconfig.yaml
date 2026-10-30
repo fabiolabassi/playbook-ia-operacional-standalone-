@@ -1,0 +1,33 @@
+prompts:
+  - file://prompt.md
+
+providers:
+  - openai:gpt-4o-mini
+
+tests:
+  - vars:
+      cenario_forge: |
+        O Forge roda um job cron de ingestão a cada 60min; 14 etapas Spark levam ~40min;
+        grava em tabelas particionadas por hora. Se um lote falha, o próximo acumula volume.
+        Dependências: Sentinel lê tabelas agregadas, Cerebro indexa eventos transformados e billing
+        roda relatórios de madrugada. A migração precisa consumir continuamente, manter dependências
+        funcionando e avançar em passos reversíveis, sem big-bang.
+    assert:
+      - type: contains
+        value: "ARQUITETURA ATUAL"
+      - type: contains
+        value: "RISCOS DA MIGRAÇÃO"
+      - type: contains
+        value: "DEPENDÊNCIAS EXTERNAS"
+      - type: contains
+        value: "GAPS DE CONHECIMENTO"
+      - type: llm-rubric
+        value: |
+          A resposta deve descrever o batch horário e as 14 etapas Spark, identificar o acúmulo após falha,
+          cobrir Sentinel, Cerebro e billing, relacionar riscos ao event-driven e separar fatos de lacunas
+          (como volume, capacidade e SLAs não fornecidos). Não invente valores de throughput ou garantias.
+        threshold: 0.75
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

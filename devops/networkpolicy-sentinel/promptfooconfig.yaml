@@ -38,17 +38,17 @@ tests:
         - DNS interno  → namespace kube-system,   pods com label k8s-app=kube-dns, porta 53
     assert:
       - type: javascript
-        value: "output.includes('kind: NetworkPolicy')"
+        value: "output.split('---').length === 2 && (output.match(/kind: NetworkPolicy/g) || []).length === 2"
       - type: javascript
-        value: "output.includes('policyTypes:') && output.includes('Ingress') && output.includes('Egress')"
+        value: "output.includes('sentinel-default-deny') && output.includes('sentinel-allow-required-flows') && output.includes('policyTypes:') && output.includes('Ingress') && output.includes('Egress') && output.split('---')[0].includes('podSelector: {}') && !output.split('---')[0].includes('ingress:') && !output.split('---')[0].includes('egress:')"
       - type: not-contains
         value: "- {}"
       - type: javascript
-        value: "output.includes('5432') && output.includes('9200')"
+        value: "output.includes('5432') && output.includes('9200') && output.includes('protocol: UDP') && output.includes('port: 53')"
       - type: javascript
-        value: "output.includes('app: relay')"
-      - type: contains
-        value: "#"
+        value: "output.includes('app: relay') && output.includes('app: api-gateway') && output.includes('app: forge') && output.includes('app: cerebro') && output.includes('k8s-app: kube-dns')"
+      - type: javascript
+        value: "(output.match(/# Permite/g) || []).length >= 5 && output.includes('protocol: TCP') && output.includes('protocol: UDP')"
       - type: latency
         threshold: 5000
       - type: cost

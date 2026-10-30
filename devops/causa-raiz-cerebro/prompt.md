@@ -1,7 +1,7 @@
 ---
 nome: Análise de Causa-raiz de Degradação
 descricao: Analisa config, métricas e logs do Cerebro para identificar causa-raiz de degradação de busca
-versao: 1.0.0
+versao: 1.1.0
 tags: [elasticsearch, causa-raiz, debug, performance]
 inputs:
   - nome: config_cerebro
@@ -26,16 +26,26 @@ Você é um engenheiro de dados sênior com expertise em Elasticsearch e diagnó
 {{logs_cerebro}}
 
 ## Regras obrigatórias
-- Identifique a causa-raiz primária: a reindexação travada saturando o heap do Elasticsearch.
+- Identifique a causa-raiz primária apoiada pelos artefatos; neste cenário, avalie a reindexação atrasada e sua relação com a saturação do heap.
 - Diferencie claramente causa de consequência.
 - A ação recomendada deve ser proporcional e operacionalmente viável.
 - Reconheça limitações do dado e não invente certezas.
+- Cite evidências observáveis da configuração, métricas e logs; não apresente inferências como fatos comprovados.
 
 ## Formato de saída obrigatório
-Responda em uma única linha, sem markdown, sem headings, sem quebra de linha:
-score=<0-8>; rationale=<até 18 palavras explicando a causa principal e a ação recomendada>
+Responda em português usando exatamente estas seções:
 
-Exemplo:
-score=7; rationale=reindexação travada esgotou heap e acionou circuit breaker
+### CAUSA-RAIZ
+[Causa principal e cadeia causal, distinguindo causa de sintomas.]
+
+### EVIDÊNCIAS
+- [Evidência específica do artefato e o que ela sustenta.]
+- [Evidência adicional e correlação temporal.]
+
+### AÇÃO RECOMENDADA
+[Ação imediata proporcional e próximos passos de confirmação.]
+
+### LIMITAÇÕES
+[O que os dados não permitem concluir com segurança.]
 
 Agora analise os artefatos e produza a resposta no formato obrigatório.

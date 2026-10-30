@@ -1,0 +1,33 @@
+prompts:
+  - file://prompt.md
+
+providers:
+  - openai:gpt-4o-mini
+
+tests:
+  - vars:
+      planejamento_forge: |
+        Estratégia gradual e reversível: adicionar consumer event-driven em staging; validar transformação
+        incremental em paralelo com batch; comparar resultados; migrar Cerebro e Sentinel por etapas;
+        migrar billing após validar fechamento diário; desligar batch somente após janela de estabilidade.
+        Cada fase requer critérios de sucesso, observabilidade e rollback. Não há comandos, nomes de tópicos,
+        limites de lag nem janela de manutenção confirmados.
+    assert:
+      - type: contains
+        value: "PLANO EXECUTÁVEL"
+      - type: contains
+        value: "Rollback plan"
+      - type: contains
+        value: "MÉTRICAS DE MONITORAMENTO"
+      - type: llm-rubric
+        value: |
+          O plano deve detalhar ações, responsáveis, duração estimada identificada como estimativa,
+          critérios mensuráveis, gatilhos e procedimentos de rollback por etapa, comunicação e contingência.
+          Não invente nomes de tópicos, comandos destrutivos ou valores apresentados como fatos; marque
+          premissas para validação humana. A migração permanece gradual e preserva o batch até equivalência
+          e estabilidade serem demonstradas.
+        threshold: 0.75
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

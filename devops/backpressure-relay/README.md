@@ -1,7 +1,7 @@
 ---
 nome: Análise de Estratégia de Backpressure
 descricao: Compara múltiplas abordagens de backpressure para o Relay, pesando prós e contras antes de recomendar
-versao: 1.0.0
+versao: 1.1.0
 tags: [backpressure, arquitetura, decisao, trade-offs]
 inputs:
   - nome: cenario_relay
@@ -30,11 +30,11 @@ Prompt para análise comparativa de estratégias de backpressure no Relay (barra
 ### RECOMENDAÇÃO FINAL
 **Abordagem recomendada**: Priorização de Tráfego + Auto-scaling limitado
 
-**Justificativa**: Priority queues garantem que Sentinel (SLA 60s) sempre tem precedência sobre Forge (SLA 15min). Auto-scaling com teto de custo responde a picos moderados sem estourar orçamento. Pico acima do teto é absorvido pela fila de retenção de 4h e reprocessado depois.
+**Justificativa**: Priority queues dão precedência ao Sentinel (SLA 60s) sobre o Forge (SLA 15min). Auto-scaling pode responder a picos se houver um teto validado em teste de carga e aprovado pelo orçamento. A retenção atual de 4h pode absorver parte do pico, desde que a capacidade e o backlog sejam medidos; isso não garante recuperação automática.
 
 **Plano de implementação**:
 1. Implementar priority queues no Relay (duas filas: alta para Sentinel, baixa para Forge)
-2. Configurar HPA com teto de custo (ex: máximo 25 réplicas)
+2. Definir limites de auto-scaling após teste de carga e estimativa de custo com dados do provedor
 3. Adicionar métricas de monitoramento
 ```
 

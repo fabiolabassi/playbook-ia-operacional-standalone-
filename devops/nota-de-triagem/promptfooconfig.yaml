@@ -3,6 +3,12 @@ prompts:
 
 providers:
   - openai:gpt-4o-mini
+  - id: ollama:chat:qwen3:0.6b
+    config:
+      think: false
+      temperature: 0.1
+      num_predict: 256
+      keep_alive: 5m
 
 tests:
   - vars:
@@ -24,7 +30,7 @@ tests:
       - type: regex
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
-        value: "output.split('\\n').length <= 8"
+        value: "output.trim().split(/\\r?\\n/).length <= 8"
       - type: latency
         threshold: 5000
       - type: cost
@@ -48,7 +54,7 @@ tests:
       - type: regex
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
-        value: "output.split('\\n').length <= 8"
+        value: "output.trim().split(/\\r?\\n/).length <= 8"
       - type: latency
         threshold: 5000
       - type: cost
@@ -72,7 +78,7 @@ tests:
       - type: regex
         value: "ESCALAR PARA:.*@\\w+"
       - type: javascript
-        value: "output.split('\\n').length <= 8"
+        value: "output.trim().split(/\\r?\\n/).length <= 8"
       - type: latency
         threshold: 5000
       - type: cost

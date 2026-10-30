@@ -1,0 +1,30 @@
+prompts:
+  - file://prompt.md
+
+providers:
+  - openai:gpt-4o-mini
+
+tests:
+  - vars:
+      cenario_relay: |
+        Relay: throughput sustentado 180k msgs/s; pico observado 320k msgs/s por 25min; retenção 4h.
+        Consumidores: Forge (ingestão) e Sentinel (alerting em tempo real).
+        Restrições: Sentinel não pode atrasar mais de 60s; Forge pode atrasar até 15min;
+        orçamento de infra já está 8% acima do previsto; perda de telemetry é inaceitável.
+        Opções: prioridade para Sentinel, dead-letter queue, isolamento por cliente e auto-scaling de consumidores.
+    assert:
+      - type: contains
+        value: "RECOMENDAÇÃO FINAL"
+      - type: llm-rubric
+        value: |
+          Avalie se a resposta compara explicitamente prioridade de tráfego, DLQ, isolamento por cliente e auto-scaling,
+          com prós/contras e trade-offs de SLA, custo, risco de perda, complexidade, reversibilidade e escala.
+          A recomendação deve proteger o SLA de 60s do Sentinel, respeitar o atraso de até 15min do Forge,
+          não aceitar perda de telemetry e tratar o orçamento acima do previsto. Não aceite estimativas de custo
+          sem dados de preço; devem ser identificadas como hipóteses ou dependentes do provedor. Pontue como
+          reprovada se faltar comparação, houver promessa sem evidência ou recomendação incompatível com as restrições.
+        threshold: 0.75
+      - type: latency
+        threshold: 5000
+      - type: cost
+        threshold: 0.01

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -u
 
 echo "=== Verificando pré-requisitos ==="
 
@@ -18,16 +18,10 @@ fi
 
 echo "✓ npm encontrado: $(npm --version)"
 
-if ! command -v promptfoo &> /dev/null; then
-    echo "promptfoo não encontrado. Instalando..."
-    npm install -g promptfoo
-fi
+echo "✓ promptfoo será executado via npx (versão 0.125.1)"
 
-echo "✓ promptfoo encontrado"
-
-if [ -z "$OPENAI_API_KEY" ]; then
-    echo "AVISO: OPENAI_API_KEY não configurada."
-    echo "Configure com: export OPENAI_API_KEY=..."
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+    echo "ERRO: OPENAI_API_KEY não configurada."
     exit 1
 fi
 
@@ -36,20 +30,24 @@ echo "=== Criando diretório de resultados ==="
 mkdir -p results
 
 echo ""
-echo "=== Rodando testes ==="
-
-echo "Rodando nota-de-triagem..."
-promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
-
-echo "Rodando triagem-de-pods..."
-promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
-
-echo "Rodando networkpolicy-sentinel..."
-promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
-
-echo "Rodando causa-raiz-cerebro..."
-promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
+echo "=== Rodando todos os testes de prompts ==="
+failed=0
+for config in devops/*/promptfooconfig.yaml; do
+    name="$(basename "$(dirname "$config")")"
+    echo "Rodando $name..."
+    if npx --yes promptfoo@0.125.1 eval -c "$config" --no-share -o "results/$name.json"; then
+        echo "✓ $name passou"
+    else
+        echo "✗ $name falhou"
+        failed=1
+    fi
+done
 
 echo ""
-echo "=== Testes concluídos ==="
+if [ "$failed" -ne 0 ]; then
+    echo "=== Uma ou mais suítes falharam; consulte os logs e results/ ==="
+    exit 1
+fi
+
+echo "=== Todas as suítes passaram ==="
 echo "Resultados salvos em results/"
