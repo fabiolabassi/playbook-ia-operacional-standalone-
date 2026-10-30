@@ -1,122 +1,60 @@
-# Playbook de IA Operacional - Aegis
+# Playbook de IA Operacional — Aegis
 
-Repositório contendo prompts de operação para o sistema Aegis, validados com testes automatizados via promptfoo e GitHub Actions.
+Biblioteca de prompts operacionais versionados, parametrizáveis e avaliados com Promptfoo.
+Cada prompt e sua documentação vivem juntos; as suítes rodam no GitHub Actions em mudanças relevantes.
 
-## Estrutura
+## Organização
 
-```
-.
-├── .github/
-│   └── workflows/
-│       └── prompt-tests.yml    # Pipeline de CI/CD
-├── devops/
-│   ├── nota-de-triagem/
-│   │   ├── prompt.md
-│   │   ├── promptfooconfig.yaml
-│   │   └── README.md
-│   ├── triagem-de-pods/
-│   │   ├── prompt.md
-│   │   ├── promptfooconfig.yaml
-│   │   └── README.md
-│   ├── networkpolicy-sentinel/
-│   │   ├── prompt.md
-│   │   ├── promptfooconfig.yaml
-│   │   └── README.md
-│   ├── causa-raiz-cerebro/
-│   │   ├── prompt.md
-│   │   ├── promptfooconfig.yaml
-│   │   └── README.md
-│   ├── backpressure-relay/
-│   │   ├── prompt.md
-│   │   └── README.md
-│   ├── migracao-forge-diagnostico/
-│   │   ├── prompt.md
-│   │   └── README.md
-│   ├── migracao-forge-planejamento/
-│   │   ├── prompt.md
-│   │   └── README.md
-│   ├── migracao-forge-execucao/
-│   │   ├── prompt.md
-│   │   └── README.md
-│   └── README.md
-├── run-tests.sh
-└── README.md
+```text
+devops/<prompt>/
+  prompt.md
+  README.md
+  promptfooconfig.yaml
+.github/workflows/prompt-tests.yml
+docs/checkpoints/
 ```
 
-## Compatibilidade com prompt-registry
+Os oito prompts dos checkpoints 01–06 estão em `devops/`, cada qual com configuração de teste.
+Os três prompts estruturados comparam OpenAI e Google. Os prompts de saída aberta usam OpenAI para
+geração e Gemini como judge. Isso exige `OPENAI_API_KEY` e `GOOGLE_API_KEY`; não coloque chaves em arquivos.
 
-O repositório foi organizado seguindo as convenções do template `prompt-registry`:
+## Executar localmente
 
-- categoria por domínio em pasta raiz (`devops/`)
-- um prompt por diretório, nomeado pelo resultado e não pela técnica
-- `prompt.md` contendo frontmatter + prompt parametrizável com `{{variavel}}`
-- `README.md` com documentação humana (objetivo, uso, exemplo, limitações)
-- versionamento semver por prompt (`versao: 1.0.0`)
-- parâmetros documentados em `inputs` no frontmatter, alinhados aos placeholders do prompt
-
-Essa estrutura permite que cada prompt seja tratado como artefato versionado, revisado e testado, em vez de texto solto no histórico do chat.
-
-## Como Rodar os Testes Localmente
-
-### Pré-requisitos
-
-1. Node.js 20+
-2. npm
-3. Chave de API (OPENAI_API_KEY)
-
-### Instalação
+Instale Node.js 22+ e configure as duas chaves no ambiente. Em seguida:
 
 ```bash
-npm install -g promptfoo
+bash run-tests.sh
 ```
 
-### Executar Testes
+O script executa todos os oito configs sem cache e grava resultados em `results/`.
+Essas avaliações fazem chamadas reais: OpenAI pode gerar cobrança; a faixa gratuita Google tem cotas
+e disponibilidade limitadas e não deve ser tratada como ilimitada. Configure controles de uso no provedor.
+
+Para validar sintaxe e referências de configuração sem chamar modelos:
 
 ```bash
-# Teste individual
-promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml
-
-# Todos os testes
-promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
-promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
-promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
-promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
+npx --yes promptfoo@0.125.1 validate config -c devops/nota-de-triagem/promptfooconfig.yaml
 ```
 
-## Configuração do GitHub Actions
+## CI
 
-### Secrets Necessários
+`.github/workflows/prompt-tests.yml` roda em PRs e pushes para `main` quando há alterações em
+`devops/**` ou no workflow, e também manualmente. PRs internos avaliam somente os prompts alterados;
+mudanças no workflow e execuções em `main` avaliam a suíte inteira. A concorrência é limitada a dois
+jobs para controlar o volume de chamadas. Resultados são salvos como artifacts e um resumo é comentado no PR.
 
-Configure o seguinte secret no repositório GitHub (Settings → Secrets and variables → Actions):
+Cadastre os secrets `OPENAI_API_KEY` e `GOOGLE_API_KEY` em **Settings → Secrets and variables → Actions**.
+PRs de forks não recebem secrets e não executam avaliações que chamem provedores.
 
-- `OPENAI_API_KEY`: Chave da API da OpenAI (disponível em https://platform.openai.com/api-keys)
+## Checkpoints e estado da evidência
 
-### Workflow
+| Checkpoint | Entrega |
+|---|---|
+| 01–06 | Prompts e documentação em `devops/` |
+| 07 | [`docs/checkpoints/07-biblioteca.md`](docs/checkpoints/07-biblioteca.md) |
+| 08 | [`docs/checkpoints/08-testes.md`](docs/checkpoints/08-testes.md) |
+| 09 | [`docs/checkpoints/09-juiz.md`](docs/checkpoints/09-juiz.md) |
+| 10 | [`docs/checkpoints/10-ci.md`](docs/checkpoints/10-ci.md) |
 
-O workflow roda automaticamente em:
-- Pull requests para o branch main
-- Push para o branch main
-- Disparo manual (workflow_dispatch)
-
-O workflow falha se qualquer teste falhar, garantindo que nenhuma regressão entre no repositório.
-
-## Estratégia de Testes
-
-### Testes Determinísticos (nota-de-triagem, triagem-de-pods, networkpolicy-sentinel)
-
-Usam asserts simples (contains, regex, javascript) para validar saídas estruturadas.
-
-### LLM-as-Judge (causa-raiz-cerebro)
-
-Usa um juiz LLM para avaliar a qualidade da análise de causa-raiz em uma escala de 0-8, com corte ≥ 6 para aprovação.
-
-## Evidências de Execução
-
-Após rodar os testes (localmente ou via GitHub Actions), registre os resultados em:
-- `checkpoint-08/entrega.md` - Testes determinísticos
-- `checkpoint-09/entrega.md` - LLM-as-judge
-- `checkpoint-10/entrega.md` - Pipeline em produção
-
-## Licença
-
-Este repositório faz parte do material didático da pós-graduação em AIOps e Inteligência Artificial com Engenharia Cloud.
+As configurações e o workflow não substituem evidência de execução real nem calibração humana.
+Essas etapas estão identificadas como pendentes até serem realizadas e registradas; não há resultados simulados.

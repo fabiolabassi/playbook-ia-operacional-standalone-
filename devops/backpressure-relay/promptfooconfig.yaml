@@ -1,0 +1,40 @@
+description: CP04 — Avaliação qualitativa da decisão de backpressure do Relay
+
+prompts:
+  - file://prompt.md
+
+providers:
+  - id: openai:gpt-4o-mini
+    label: gpt-4o-mini
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+defaultTest:
+  options:
+    provider: google:gemini-3.1-flash-lite
+  assert:
+    - type: latency
+      threshold: 120000
+    - type: cost
+      threshold: 0.1
+
+tests:
+  - description: Decisão sob pico de carga e restrições conflitantes
+    vars:
+      cenario_relay: |
+        Throughput sustentado: 180k msgs/s; pico: 320k msgs/s por 25 minutos.
+        Retenção atual: 4 horas. Consumidores: Forge e Sentinel.
+        Sentinel tolera no máximo 60 segundos de atraso; Forge, 15 minutos.
+        Orçamento de infraestrutura está 8% acima do previsto.
+        Perda de telemetry é inaceitável.
+    assert:
+      - type: llm-rubric
+        value: |
+          Avalie a resposta em quatro critérios de 0 a 2:
+          1. Compara pelo menos três estratégias viáveis, apontando benefícios e limitações.
+          2. Relaciona as opções aos SLAs distintos de Sentinel e Forge e à exigência de não perder dados.
+          3. Faz uma recomendação executável e justificada, considerando o orçamento excedido.
+          4. Expõe riscos, premissas e o trade-off que permanece após a decisão.
+          Aprove somente com soma >= 6/8 e nenhum critério zero. Não premie afirmações de custo sem base.
+        threshold: 0.75

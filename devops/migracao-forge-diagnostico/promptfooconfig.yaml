@@ -1,0 +1,42 @@
+description: CP05 — Avaliação qualitativa do diagnóstico do pipeline Forge
+
+prompts:
+  - file://prompt.md
+
+providers:
+  - id: openai:gpt-4o-mini
+    label: gpt-4o-mini
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+defaultTest:
+  options:
+    provider: google:gemini-3.1-flash-lite
+  assert:
+    - type: latency
+      threshold: 120000
+    - type: cost
+      threshold: 0.1
+
+tests:
+  - description: Diagnóstico do batch horário e seus dependentes
+    vars:
+      cenario_forge: |
+        O Forge ingere dados em lotes a cada 60 minutos e executa 14 etapas Spark,
+        levando cerca de 40 minutos. Os dados são gravados em tabelas particionadas
+        por hora. Se um lote falha, o próximo acumula o dobro do volume.
+        Consumidores: Sentinel (alertas), Cerebro (busca) e billing.
+        A migração desejada é para processamento contínuo, em etapas pequenas,
+        sem big-bang e com rollback. Volumes, SLAs detalhados e tolerância a atraso
+        do billing ainda precisam ser confirmados.
+    assert:
+      - type: llm-rubric
+        value: |
+          Avalie o diagnóstico em quatro critérios de 0 a 2:
+          1. Descreve o fluxo batch e aponta a semântica de lote/partição que precisa ser preservada.
+          2. Identifica riscos específicos de acúmulo, duplicidade, ordenação e dependências consumidoras.
+          3. Distingue riscos confirmados de hipóteses e explicita os dados ausentes para dimensionar.
+          4. Produz diagnóstico útil para planejar migração incremental, sem inventar métricas nem SLAs.
+          Aprove apenas com soma >= 6/8 e nenhum critério zero.
+        threshold: 0.75

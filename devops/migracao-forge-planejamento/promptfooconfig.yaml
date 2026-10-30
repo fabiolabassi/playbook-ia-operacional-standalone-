@@ -1,0 +1,40 @@
+description: CP05 — Avaliação qualitativa do plano incremental do Forge
+
+prompts:
+  - file://prompt.md
+
+providers:
+  - id: openai:gpt-4o-mini
+    label: gpt-4o-mini
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+defaultTest:
+  options:
+    provider: google:gemini-3.1-flash-lite
+  assert:
+    - type: latency
+      threshold: 120000
+    - type: cost
+      threshold: 0.1
+
+tests:
+  - description: Plano de migração sem big-bang e reversível
+    vars:
+      diagnostico_forge: |
+        O Forge processa 14 etapas Spark em lotes horários de cerca de 40 minutos.
+        As tabelas são particionadas por hora; quando uma execução falha, o próximo
+        lote acumula volume. Sentinel, Cerebro e billing dependem dos dados.
+        Faltam confirmar volumes, SLAs por consumidor, janela de mudança e capacidade
+        do broker. O plano deve manter consistência e evitar perda/duplicidade.
+    assert:
+      - type: llm-rubric
+        value: |
+          Avalie o plano em quatro critérios de 0 a 2:
+          1. Propõe etapas incrementais e ordenadas, sem substituição big-bang.
+          2. Mantém compatibilidade com consumidores e trata idempotência, replay e reconciliação.
+          3. Define gates observáveis e rollback específico para cada etapa relevante.
+          4. Prioriza dependências de maior risco e declara premissas/gaps sem inventar SLAs.
+          Aprove apenas com soma >= 6/8 e nenhum critério zero.
+        threshold: 0.75
