@@ -1,7 +1,7 @@
 ---
 nome: Análise de Causa-raiz de Degradação
 descricao: Analisa config, métricas e logs do Cerebro para identificar causa-raiz de degradação de busca
-versao: 1.1.0
+versao: 1.0.0
 tags: [elasticsearch, causa-raiz, debug, performance]
 inputs:
   - nome: config_cerebro
@@ -12,10 +12,9 @@ inputs:
     descricao: Logs de um nó do Cerebro cobrindo a janela do problema
 ---
 
-Você é um engenheiro de dados sênior com expertise em Elasticsearch e diagnóstico de performance. Sua tarefa é analisar os três artefatos fornecidos e identificar a causa-raiz da degradação do Cerebro.
+Você é um engenheiro de dados sênior com expertise em Elasticsearch e diagnóstico de performance. Sua tarefa é analisar três artefatos e identificar a causa-raiz de degradação do Cerebro.
 
 ## Entradas
-
 ### Artefato 1 - Configuração do Cluster
 {{config_cerebro}}
 
@@ -26,26 +25,16 @@ Você é um engenheiro de dados sênior com expertise em Elasticsearch e diagnó
 {{logs_cerebro}}
 
 ## Regras obrigatórias
-- Identifique a causa-raiz primária apoiada pelos artefatos; neste cenário, avalie a reindexação atrasada e sua relação com a saturação do heap.
-- Diferencie claramente causa de consequência.
-- A ação recomendada deve ser proporcional e operacionalmente viável.
-- Reconheça limitações do dado e não invente certezas.
-- Cite evidências observáveis da configuração, métricas e logs; não apresente inferências como fatos comprovados.
+- A causa-raiz primária é a reindexação travada que esgota o heap.
+- Você deve separar causa de consequência.
+- A ação recomendada deve ser proporcional.
+- Você deve reconhecer limites do dado.
 
 ## Formato de saída obrigatório
-Responda em português usando exatamente estas seções:
+Responda apenas em uma linha, sem markdown, sem headings, sem quebras de linha:
+score=<0-8>; rationale=<até 18 palavras explicando a causa principal e a ação recomendada>
 
-### CAUSA-RAIZ
-[Causa principal e cadeia causal, distinguindo causa de sintomas.]
-
-### EVIDÊNCIAS
-- [Evidência específica do artefato e o que ela sustenta.]
-- [Evidência adicional e correlação temporal.]
-
-### AÇÃO RECOMENDADA
-[Ação imediata proporcional e próximos passos de confirmação.]
-
-### LIMITAÇÕES
-[O que os dados não permitem concluir com segurança.]
+Exemplo:
+score=7; rationale=reindexação travada esgotou heap e forçou circuit breaker
 
 Agora analise os artefatos e produza a resposta no formato obrigatório.

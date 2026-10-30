@@ -29,7 +29,3 @@ Entram aqui prompts relacionados a:
 - [migracao-forge-planejamento](./migracao-forge-planejamento/) — Propõe um passo a passo da migração do Forge de batch para event-driven baseado no diagnóstico, com etapas reversíveis
 - [migracao-forge-execucao](./migracao-forge-execucao/) — Detalha o plano de migração do Forge com ações específicas, rollback plan e critérios de sucesso medíveis
 - [networkpolicy-sentinel](./networkpolicy-sentinel/) — Corrige manifesto permissivo de NetworkPolicy e transforma em política default-deny com regras explícitas
-
-## Avaliações
-
-Todos os oito prompts têm `promptfooconfig.yaml` junto ao `prompt.md`. O workflow executa cada configuração e `run-tests.sh` roda a suíte completa localmente. Os testes estruturados priorizam asserts determinísticos; as análises abertas usam LLM-as-judge. Fixtures representativos não substituem validação humana ou staging.

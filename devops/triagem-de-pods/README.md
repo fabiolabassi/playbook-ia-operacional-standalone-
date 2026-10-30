@@ -1,7 +1,7 @@
 ---
 nome: Triagem de Pods Kubernetes
 descricao: Analisa snapshot de cluster Kubernetes e identifica pods problemáticos com causa provável e ação recomendada
-versao: 1.1.0
+versao: 1.0.0
 tags: [kubernetes, sre, triagem, debug]
 inputs:
   - nome: snapshot_cluster
@@ -11,7 +11,7 @@ inputs:
 # Triagem de Pods Kubernetes
 
 ## Objetivo
-Prompt para triagem rápida e confiável da saúde de pods em um cluster Kubernetes. Recebe um snapshot contendo `kubectl get pods`, `kubectl describe` e `kubectl logs`, e retorna uma análise estruturada identificando pods problemáticos, suas causas prováveis e ações recomendadas para o plantonista. `Running` não é tratado como saudável sem considerar prontidão, restarts recentes, eventos e logs.
+Prompt para triagem rápida e confiável da saúde de pods em um cluster Kubernetes. Recebe um snapshot contendo `kubectl get pods`, `kubectl describe` e `kubectl logs`, e retorna uma análise estruturada identificando pods problemáticos, suas causas prováveis e ações recomendadas para o plantonista.
 
 ## Quando Usar
 - Durante incidentes ou plantões para diagnosticar problemas em clusters Kubernetes
@@ -44,7 +44,7 @@ $ kubectl logs sentinel-api-7d9c8b6f4-h4m2t -n sentinel-prod --previous
 **Nome do Pod**: sentinel-api-7d9c8b6f4-h4m2t
 - **Status**: CrashLoopBackOff (14 restarts em 42m)
 - **Causa Provável**: OOMKilled - o pod está sendo terminado por falta de memória. Os logs mostram heap chegando ao limite antes do FATAL "out of memory".
-- **Ação Recomendada**: Confirmar consumo e capacidade do nó; investigar crescimento de heap/leak e só então ajustar o limite de memória com validação em staging.
+- **Ação Recomendada**: Aumentar o limite de memória do pod de 512Mi para 768Mi ou investigar memory leak.
 
 ### RESUMO DA SITUAÇÃO
 Um pod do sentinel-api está em CrashLoopBackOff devido a OOMKilled, afetando a disponibilidade do serviço.
@@ -63,5 +63,5 @@ Um pod do sentinel-api está em CrashLoopBackOff devido a OOMKilled, afetando a 
 
 ## Técnica Utilizada
 - Few-Shot Learning: exemplos de casos comuns (OOMKilled, ImagePullBackOff, Pending, saudável)
-- Análise estruturada baseada em evidências: status, prontidão, restarts, eventos e logs são correlacionados sem exigir exposição de raciocínio privado
+- Chain of Thought: raciocínio estruturado em 6 passos (verificar status, examinar eventos, analisar logs, correlacionar, investigar restarts, identificar motivo)
 - Role Prompting: define o modelo como "engenheiro SRE com expertise em diagnósticos de clusters Kubernetes"

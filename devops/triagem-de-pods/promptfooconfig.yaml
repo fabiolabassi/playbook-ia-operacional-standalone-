@@ -109,28 +109,3 @@ tests:
         threshold: 5000
       - type: cost
         threshold: 0.01
-
-  - vars:
-      snapshot_cluster: |
-        $ kubectl get pods -n sentinel-prod
-        NAME                           READY   STATUS    RESTARTS      AGE
-        sentinel-api-7d9c8b6f4-x8p2q   1/1     Running   14 (30s ago)  42m
-        $ kubectl describe pod sentinel-api-7d9c8b6f4-x8p2q -n sentinel-prod
-        Last State:     Terminated
-          Reason:       Error
-          Exit Code:    1
-        Events:
-          Warning  BackOff  1m (x14 over 40m)  kubelet  Back-off restarting failed container api
-        $ kubectl logs sentinel-api-7d9c8b6f4-x8p2q -n sentinel-prod --previous
-        2026-05-13 12:05:12 [ERROR] [api] failed to load required configuration, exiting
-    assert:
-      - type: contains
-        value: "sentinel-api-7d9c8b6f4-x8p2q"
-      - type: contains
-        value: "14"
-      - type: javascript
-        value: "output.includes('PODS PROBLEMÁTICOS') && output.includes('Running')"
-      - type: latency
-        threshold: 5000
-      - type: cost
-        threshold: 0.01

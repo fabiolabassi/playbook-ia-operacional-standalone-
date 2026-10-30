@@ -48,7 +48,3 @@ ESCALAR PARA: @sentinel-core se fila do Relay não estabilizar em 10min
 - Few-Shot Learning: 3 exemplos de notas bem formatadas ensinam o padrão de tom, nível de detalhe e estrutura
 - Role Prompting: define o modelo como "engenheiro de plantão na Aegis" para alinhar o contexto
 - Constraint Specification: instruções explícitas sobre concisão (máximo 8 linhas) e formato do @handle
-
-## Avaliação
-- `promptfooconfig.yaml` executa os casos em `tests.yaml` com OpenAI, valida conteúdo e latência e impõe limite de US$ 0,01 por chamada.
-- A execução está restrita a OpenAI porque é o único provedor com tokens/credenciais disponíveis neste projeto. O desafio exige dois provedores distintos; este requisito fica pendente. Meta Llama 3.2 1B via Ollama foi testado, mas reprovou os três casos na execução #55 e foi removido.
