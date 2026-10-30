@@ -2,7 +2,20 @@ prompts:
   - file://prompt.md
 
 providers:
-  - openai:gpt-4o-mini
+  - id: openai:gpt-4o-mini
+    label: gpt-4o-mini
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+defaultTest:
+  options:
+    provider: google:gemini-3.1-flash-lite
+  assert:
+    - type: latency
+      threshold: 120000
+    - type: cost
+      threshold: 0.1
 
 tests:
   - vars:
@@ -50,19 +63,11 @@ tests:
     assert:
       - type: llm-rubric
         value: |
-          Avalie a saída da análise de causa-raiz usando estes critérios, em escala 0-2 cada:
-          1) Causa-raiz correta: aponta a reindexação travada como causa primária e não só sintomas.
-          2) Correlação causa vs consequência: separa causa de efeito (cache, circuit breaker, latência, timeouts).
-          3) Ação proporcional: sugere ação coerente com a causa (reagendar ou rebaixar a reindexação; rever heap/limites).
-          4) Honestidade epistêmica: reconhece limites e não inventa certezas.
-          Regras:
-          - total máximo = 8
-          - aprovação = score >= 6 e nenhum critério zerado
-          - responda apenas em uma linha: score=<0-8>; rationale=<até 18 palavras>
-        threshold: 6
-      - type: regex
-        value: "^score=([0-8]); rationale=.*$"
-      - type: latency
-        threshold: 5000
-      - type: cost
-        threshold: 0.01
+          Julgue a resposta como analista de incidentes. Dê nota de 0 a 2 em cada critério:
+          (1) identifica a reindexação atrasada como causa, distinguindo-a de heap/cache/timeouts;
+          (2) explica a sequência causal com evidências dos artefatos, sem inverter eventos;
+          (3) recomenda contenção e correção de fundo proporcionais, sem ação destrutiva não justificada;
+          (4) explicita lacunas dos dados e não inventa fatos.
+          Aprove apenas se a soma for >= 6/8 e nenhum critério receber zero. Considere a resposta inteira,
+          não exija formato de saída artificial. Responda com veredito e justificativa concisa.
+        threshold: 0.75

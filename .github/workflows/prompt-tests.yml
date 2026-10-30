@@ -1,123 +1,177 @@
-name: Prompt Tests
+name: Prompt Quality Gate
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'devops/**'
-      - '.github/workflows/prompt-tests.yml'
+      - "devops/**"
+      - ".github/workflows/prompt-tests.yml"
   push:
     branches: [main]
     paths:
-      - 'devops/**'
-      - '.github/workflows/prompt-tests.yml'
+      - "devops/**"
+      - ".github/workflows/prompt-tests.yml"
   workflow_dispatch:
 
+concurrency:
+  group: prompt-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  prompt-tests:
-    name: Run promptfoo tests
+  detect:
     runs-on: ubuntu-latest
-
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      has_prompts: ${{ steps.matrix.outputs.has_prompts }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: '20'
+          fetch-depth: 0
 
-      - name: Validate OpenAI secret
-        shell: bash
+      - name: Select prompt configurations
+        id: matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
-            echo "OPENAI_API_KEY is not configured."
-            exit 1
-          fi
+          node <<'NODE'
+          const { execFileSync } = require('node:child_process');
+          const fs = require('node:fs');
+          const all = [
+            ['nota-de-triagem', 'devops/nota-de-triagem/promptfooconfig.yaml'],
+            ['triagem-de-pods', 'devops/triagem-de-pods/promptfooconfig.yaml'],
+            ['networkpolicy-sentinel', 'devops/networkpolicy-sentinel/promptfooconfig.yaml'],
+            ['causa-raiz-cerebro', 'devops/causa-raiz-cerebro/promptfooconfig.yaml'],
+            ['backpressure-relay', 'devops/backpressure-relay/promptfooconfig.yaml'],
+            ['migracao-forge-diagnostico', 'devops/migracao-forge-diagnostico/promptfooconfig.yaml'],
+            ['migracao-forge-planejamento', 'devops/migracao-forge-planejamento/promptfooconfig.yaml'],
+            ['migracao-forge-execucao', 'devops/migracao-forge-execucao/promptfooconfig.yaml'],
+          ];
+          let selected = all;
+          if (process.env.EVENT_NAME === 'pull_request') {
+            const changed = execFileSync('git', [
+              'diff', '--name-only', process.env.BASE_SHA, process.env.HEAD_SHA,
+            ], { encoding: 'utf8' }).split(/\r?\n/).filter(Boolean);
+            const workflowChanged = changed.includes('.github/workflows/prompt-tests.yml');
+            if (!workflowChanged) {
+              const dirs = new Set(changed
+                .filter((file) => file.startsWith('devops/'))
+                .map((file) => file.split('/').slice(0, 2).join('/')));
+              selected = all.filter(([, config]) => dirs.has(config.split('/').slice(0, 2).join('/')));
+            }
+          }
+          const include = selected
+            .filter(([, config]) => fs.existsSync(config))
+            .map(([name, config]) => ({ name, config }));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, [
+            `matrix=${JSON.stringify({ include })}`,
+            `has_prompts=${include.length ? 'true' : 'false'}`,
+            '',
+          ].join('\n'));
+          NODE
 
-      - name: Install promptfoo
-        run: npm install -g promptfoo
+  eval:
+    name: Evaluate ${{ matrix.name }}
+    needs: detect
+    if: needs.detect.outputs.has_prompts == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Run tests for nota-de-triagem
-        run: promptfoo eval -c devops/nota-de-triagem/promptfooconfig.yaml -o results/nota-de-triagem.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate provider secrets
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          test -n "$OPENAI_API_KEY" || { echo "::error::OPENAI_API_KEY is not configured"; exit 1; }
+          test -n "$GOOGLE_API_KEY" || { echo "::error::GOOGLE_API_KEY is not configured"; exit 1; }
 
-      - name: Run tests for triagem-de-pods
-        run: promptfoo eval -c devops/triagem-de-pods/promptfooconfig.yaml -o results/triagem-de-pods.json
+      - name: Run Promptfoo evaluation
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          PROMPTFOO_DISABLE_TELEMETRY: "1"
+        run: |
+          mkdir -p results
+          npx --yes promptfoo@0.125.1 eval \
+            -c "${{ matrix.config }}" \
+            --no-cache \
+            --no-progress-bar \
+            -o "results/${{ matrix.name }}.json"
 
-      - name: Run tests for networkpolicy-sentinel
-        run: promptfoo eval -c devops/networkpolicy-sentinel/promptfooconfig.yaml -o results/networkpolicy-sentinel.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Upload evaluation result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-${{ matrix.name }}
+          path: results/${{ matrix.name }}.json
+          if-no-files-found: ignore
+          retention-days: 14
 
-      - name: Run tests for causa-raiz-cerebro
-        run: promptfoo eval -c devops/causa-raiz-cerebro/promptfooconfig.yaml -o results/causa-raiz-cerebro.json
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  comment:
+    name: Comment evaluation summary
+    needs: eval
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: results
+          pattern: promptfoo-*
 
-      - name: Comment results on PR
-        if: github.event_name == 'pull_request'
+      - name: Publish summary on the PR
         uses: actions/github-script@v7
+        env:
+          EVAL_STATUS: ${{ needs.eval.result }}
         with:
           script: |
             const fs = require('fs');
-            const resultsDir = 'results';
-
-            let comment = '## Prompt Test Results\n\n';
-
-            const prompts = [
-              { name: 'nota-de-triagem', file: 'nota-de-triagem.json' },
-              { name: 'triagem-de-pods', file: 'triagem-de-pods.json' },
-              { name: 'networkpolicy-sentinel', file: 'networkpolicy-sentinel.json' },
-              { name: 'causa-raiz-cerebro', file: 'causa-raiz-cerebro.json' }
-            ];
-
-            for (const prompt of prompts) {
-              const filePath = `${resultsDir}/${prompt.file}`;
-              if (fs.existsSync(filePath)) {
-                const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                const results = data.results;
-
-                let passCount = 0;
-                let failCount = 0;
-
-                for (const result of results) {
-                  if (result.success) {
-                    passCount++;
-                  } else {
-                    failCount++;
-                  }
-                }
-
-                const status = failCount === 0 ? 'PASS' : 'FAIL';
-                comment += `### ${prompt.name}: ${status} (${passCount}/${passCount + failCount})\n\n`;
-
-                if (failCount > 0) {
-                  comment += '**Failed tests:**\n';
-                  for (const result of results) {
-                    if (!result.success) {
-                      comment += `- Test: ${result.prompt?.label || result.description}\n`;
-                      comment += `  Error: ${result.error || 'Assert failed'}\n\n`;
-                    }
-                  }
-                }
+            const path = require('path');
+            const files = [];
+            const walk = (dir) => {
+              if (!fs.existsSync(dir)) return;
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) walk(full);
+                else if (entry.name.endsWith('.json')) files.push(full);
               }
+            };
+            walk('results');
+            const lines = [
+              `## Promptfoo evaluation — ${process.env.EVAL_STATUS}`,
+              '',
+              '| Prompt | Passaram | Falharam |',
+              '|---|---:|---:|',
+            ];
+            for (const file of files) {
+              const name = path.basename(file, '.json');
+              const data = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+              const results = Array.isArray(data.results)
+                ? data.results
+                : (data.results?.results || []);
+              const passed = results.filter((result) => result.success).length;
+              const failed = results.length - passed;
+              lines.push(`| ${name} | ${passed} | ${failed} |`);
             }
-
-            comment += '\n---\n\n*Generated by promptfoo*';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            if (!files.length) lines.push('| Nenhum resultado disponível | — | — |');
+            lines.push('', 'Resultados detalhados estão nos artifacts desta execução.');
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
+              issue_number: context.issue.number,
+              body: lines.join('\n'),
             });
-
-      - name: Upload results as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: prompt-test-results
-          path: results/

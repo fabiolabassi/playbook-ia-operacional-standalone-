@@ -29,3 +29,5 @@ Entram aqui prompts relacionados a:
 - [migracao-forge-planejamento](./migracao-forge-planejamento/) — Propõe um passo a passo da migração do Forge de batch para event-driven baseado no diagnóstico, com etapas reversíveis
 - [migracao-forge-execucao](./migracao-forge-execucao/) — Detalha o plano de migração do Forge com ações específicas, rollback plan e critérios de sucesso medíveis
 - [networkpolicy-sentinel](./networkpolicy-sentinel/) — Corrige manifesto permissivo de NetworkPolicy e transforma em política default-deny com regras explícitas
+
+Todos os prompts têm uma configuração Promptfoo na própria pasta. As avaliações estruturadas comparam OpenAI e Google; os prompts de saída aberta usam OpenAI para gerar e Gemini como judge. A calibração humana das rubricas e a primeira execução após configurar os secrets são evidências pendentes, não presumidas.
