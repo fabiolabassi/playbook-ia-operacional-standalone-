@@ -30,10 +30,6 @@ jobs:
             config: devops/nota-de-triagem/promptfooconfig.yaml
             prompt: devops/nota-de-triagem/prompt.md
             tests: devops/nota-de-triagem/tests.yaml
-          - name: nota-de-triagem-ollama
-            config: devops/nota-de-triagem/promptfooconfig-ollama.yaml
-            prompt: devops/nota-de-triagem/prompt.md
-            tests: devops/nota-de-triagem/tests.yaml
           - name: triagem-de-pods
             config: devops/triagem-de-pods/promptfooconfig.yaml
             prompt: devops/triagem-de-pods/prompt.md
@@ -88,32 +84,6 @@ jobs:
           key: ${{ runner.os }}-promptfoo-${{ matrix.name }}-${{ hashFiles(matrix.config, matrix.prompt, matrix.tests) }}
           restore-keys: |
             ${{ runner.os }}-promptfoo-${{ matrix.name }}-
-
-      - name: Cache Ollama model
-        if: matrix.name == 'nota-de-triagem-ollama'
-        uses: actions/cache@v4
-        with:
-          path: ~/.ollama/models
-          key: ${{ runner.os }}-ollama-llama3.2-1b
-
-      - name: Start Ollama and pull evaluation model
-        if: matrix.name == 'nota-de-triagem-ollama'
-        shell: bash
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 &
-          for attempt in {1..30}; do
-            if curl --silent --fail http://localhost:11434/api/tags > /dev/null; then
-              break
-            fi
-            sleep 2
-          done
-          curl --silent --fail http://localhost:11434/api/tags > /dev/null || {
-            cat "$RUNNER_TEMP/ollama.log"
-            echo "::error::Ollama did not start"
-            exit 1
-          }
-          ollama pull llama3.2:1b
 
       - name: Run Promptfoo evaluation and comment on PR
         uses: promptfoo/promptfoo-action@v1

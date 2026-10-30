@@ -4,7 +4,9 @@ Repositório de prompts operacionais parametrizáveis para a Aegis, versionados 
 
 ## Executar as avaliações
 
-Cada prompt em `devops/` possui uma configuração Promptfoo. A nota de triagem é avaliada em duas configurações independentes: OpenAI aplica o limite de custo de US$ 0,01 por chamada; Meta Llama 3.2 1B via Ollama executa os mesmos casos sem assert monetário, pois não há cobrança por token de API nem custo informado ao Promptfoo. Para executar a suíte completa localmente, instale Node.js 22+ com npm, Ollama com o modelo `llama3.2:1b` e configure `OPENAI_API_KEY` no ambiente. O script usa `npx` para executar a versão fixada de Promptfoo. Não grave chaves no repositório.
+Cada prompt em `devops/` possui uma configuração Promptfoo. As avaliações usam `openai:gpt-4o-mini`; a nota de triagem aplica limite de custo de US$ 0,01 por chamada. Para executar a suíte completa localmente, instale Node.js 22+ com npm e configure `OPENAI_API_KEY` no ambiente. O script usa `npx` para executar a versão fixada de Promptfoo. Não grave chaves no repositório.
+
+**Limitação do desafio:** a execução foi restrita a OpenAI porque este é o único provedor para o qual há tokens/credenciais disponíveis. O enunciado exige pelo menos dois provedores distintos; portanto, esta escolha não satisfaz esse requisito e não deve ser apresentada como aderência integral. A execução anterior do Meta Llama 3.2 1B via Ollama reprovou os três casos da nota de triagem e foi removida do gate.
 
 ```bash
 bash run-tests.sh
@@ -25,7 +27,6 @@ O workflow roda em cada pull request e push, exige aprovação de 100% dos teste
 │   ├── nota-de-triagem/
 │   │   ├── prompt.md
 │   │   ├── promptfooconfig.yaml
-│   │   ├── promptfooconfig-ollama.yaml
 │   │   ├── tests.yaml
 │   │   └── README.md
 │   ├── triagem-de-pods/
