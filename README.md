@@ -4,7 +4,7 @@ Repositório de prompts operacionais parametrizáveis para a Aegis, versionados 
 
 ## Executar as avaliações
 
-Cada prompt em `devops/` possui um `promptfooconfig.yaml`. Para executar a suíte completa localmente, instale Node.js 22+ com npm, Ollama com o modelo `qwen3:0.6b` e configure `OPENAI_API_KEY` no ambiente. O script usa `npx` para executar a versão fixada de Promptfoo. Não grave chaves no repositório.
+Cada prompt em `devops/` possui uma configuração Promptfoo. A nota de triagem é avaliada em duas configurações independentes: OpenAI aplica o limite de custo de US$ 0,01 por chamada; Meta Llama 3.2 1B via Ollama executa os mesmos casos sem assert monetário, pois não há cobrança por token de API nem custo informado ao Promptfoo. Para executar a suíte completa localmente, instale Node.js 22+ com npm, Ollama com o modelo `llama3.2:1b` e configure `OPENAI_API_KEY` no ambiente. O script usa `npx` para executar a versão fixada de Promptfoo. Não grave chaves no repositório.
 
 ```bash
 bash run-tests.sh
@@ -25,6 +25,8 @@ O workflow roda em cada pull request e push, exige aprovação de 100% dos teste
 │   ├── nota-de-triagem/
 │   │   ├── prompt.md
 │   │   ├── promptfooconfig.yaml
+│   │   ├── promptfooconfig-ollama.yaml
+│   │   ├── tests.yaml
 │   │   └── README.md
 │   ├── triagem-de-pods/
 │   │   ├── prompt.md

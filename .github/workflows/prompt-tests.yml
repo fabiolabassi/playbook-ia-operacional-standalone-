@@ -24,20 +24,40 @@ jobs:
         include:
           - name: nota-de-triagem
             config: devops/nota-de-triagem/promptfooconfig.yaml
+            prompt: devops/nota-de-triagem/prompt.md
+            tests: devops/nota-de-triagem/tests.yaml
+          - name: nota-de-triagem-ollama
+            config: devops/nota-de-triagem/promptfooconfig-ollama.yaml
+            prompt: devops/nota-de-triagem/prompt.md
+            tests: devops/nota-de-triagem/tests.yaml
           - name: triagem-de-pods
             config: devops/triagem-de-pods/promptfooconfig.yaml
+            prompt: devops/triagem-de-pods/prompt.md
+            tests: ''
           - name: causa-raiz-cerebro
             config: devops/causa-raiz-cerebro/promptfooconfig.yaml
+            prompt: devops/causa-raiz-cerebro/prompt.md
+            tests: ''
           - name: backpressure-relay
             config: devops/backpressure-relay/promptfooconfig.yaml
+            prompt: devops/backpressure-relay/prompt.md
+            tests: ''
           - name: migracao-forge-diagnostico
             config: devops/migracao-forge-diagnostico/promptfooconfig.yaml
+            prompt: devops/migracao-forge-diagnostico/prompt.md
+            tests: ''
           - name: migracao-forge-planejamento
             config: devops/migracao-forge-planejamento/promptfooconfig.yaml
+            prompt: devops/migracao-forge-planejamento/prompt.md
+            tests: ''
           - name: migracao-forge-execucao
             config: devops/migracao-forge-execucao/promptfooconfig.yaml
+            prompt: devops/migracao-forge-execucao/prompt.md
+            tests: ''
           - name: networkpolicy-sentinel
             config: devops/networkpolicy-sentinel/promptfooconfig.yaml
+            prompt: devops/networkpolicy-sentinel/prompt.md
+            tests: ''
 
     steps:
       - name: Checkout repository
@@ -61,19 +81,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .promptfoo-cache
-          key: ${{ runner.os }}-promptfoo-${{ matrix.name }}-${{ hashFiles(matrix.config, format('devops/{0}/prompt.md', matrix.name)) }}
+          key: ${{ runner.os }}-promptfoo-${{ matrix.name }}-${{ hashFiles(matrix.config, matrix.prompt, matrix.tests) }}
           restore-keys: |
             ${{ runner.os }}-promptfoo-${{ matrix.name }}-
 
       - name: Cache Ollama model
-        if: matrix.name == 'nota-de-triagem'
+        if: matrix.name == 'nota-de-triagem-ollama'
         uses: actions/cache@v4
         with:
           path: ~/.ollama/models
-          key: ${{ runner.os }}-ollama-qwen3-0.6b
+          key: ${{ runner.os }}-ollama-llama3.2-1b
 
       - name: Start Ollama and pull evaluation model
-        if: matrix.name == 'nota-de-triagem'
+        if: matrix.name == 'nota-de-triagem-ollama'
         shell: bash
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
@@ -89,7 +109,7 @@ jobs:
             echo "::error::Ollama did not start"
             exit 1
           }
-          ollama pull qwen3:0.6b
+          ollama pull llama3.2:1b
 
       - name: Run Promptfoo evaluation and comment on PR
         uses: promptfoo/promptfoo-action@v1
@@ -111,9 +131,13 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PROMPTFOO_CACHE_PATH: .promptfoo-cache
+          PROMPT_PATH: ${{ matrix.prompt }}
+          TESTS_PATH: ${{ matrix.tests }}
+          CONFIG_PATH: ${{ matrix.config }}
         run: |
-          prompt="devops/${{ matrix.name }}/prompt.md"
-          config="devops/${{ matrix.name }}/promptfooconfig.yaml"
+          prompt="$PROMPT_PATH"
+          tests="$TESTS_PATH"
+          config="$CONFIG_PATH"
           base="$BASE_SHA"
           if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
             base="$(git rev-parse HEAD^ 2>/dev/null || true)"
@@ -122,13 +146,24 @@ jobs:
             echo "No prior prompt revision is available; absolute quality gates still apply."
             exit 0
           fi
-          if git diff --quiet "$base" "$GITHUB_SHA" -- "$prompt" "$config"; then
+          changed_files=("$prompt" "$config")
+          if [ -n "$tests" ]; then
+            changed_files+=("$tests")
+          fi
+          if git diff --quiet "$base" "$GITHUB_SHA" -- "${changed_files[@]}"; then
             echo "Prompt and evaluation contract are unchanged; base comparison skipped."
             exit 0
           fi
 
           baseline_dir="$(mktemp -d)"
           git show "$base:$prompt" > "$baseline_dir/prompt.md"
+          if [ -n "$tests" ]; then
+            if git cat-file -e "$base:$tests" 2>/dev/null; then
+              git show "$base:$tests" > "$baseline_dir/tests.yaml"
+            else
+              cp "$tests" "$baseline_dir/tests.yaml"
+            fi
+          fi
           cp "$config" "$baseline_dir/promptfooconfig.yaml"
           head_result="$RUNNER_TEMP/${{ matrix.name }}-head.json"
           base_result="$RUNNER_TEMP/${{ matrix.name }}-base.json"

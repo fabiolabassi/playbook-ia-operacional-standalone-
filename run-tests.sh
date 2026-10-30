@@ -32,8 +32,12 @@ mkdir -p results
 echo ""
 echo "=== Rodando todos os testes de prompts ==="
 failed=0
-for config in devops/*/promptfooconfig.yaml; do
+for config in devops/*/promptfooconfig*.yaml; do
     name="$(basename "$(dirname "$config")")"
+    if [ "$(basename "$config")" != "promptfooconfig.yaml" ]; then
+        provider="${config##*-}"
+        name="$name-${provider%.yaml}"
+    fi
     echo "Rodando $name..."
     if npx --yes promptfoo@0.125.1 eval -c "$config" --no-share -o "results/$name.json"; then
         echo "✓ $name passou"
