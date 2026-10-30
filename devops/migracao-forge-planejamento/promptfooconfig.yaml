@@ -31,6 +31,10 @@ tests:
     assert:
       - type: llm-rubric
         value: |
+          Avalie com rigor e pontue somente ações que o plano realmente especifica.
+          Menções genéricas não contam como tratamento de idempotência, replay ou reconciliação.
+          Não apresente broker, arquitetura, capacidade ou SLA não fornecidos como fatos; premissas
+          precisam ser declaradas e confirmadas. Afirmação material sem suporte zera o critério afetado.
           Avalie o plano em quatro critérios de 0 a 2:
           1. Propõe etapas incrementais e ordenadas, sem substituição big-bang.
           2. Mantém compatibilidade com consumidores e trata idempotência, replay e reconciliação.

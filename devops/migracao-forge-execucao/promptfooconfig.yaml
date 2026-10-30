@@ -32,6 +32,10 @@ tests:
     assert:
       - type: llm-rubric
         value: |
+          Avalie com rigor e pontue somente ações e critérios que o plano realmente especifica.
+          Não invente thresholds, SLAs, owners, datas ou custos como se tivessem sido aprovados;
+          valores ausentes devem ser marcados para confirmação. Uma afirmação material sem suporte
+          zera o critério afetado. Checksums isolados não substituem idempotência e reconciliação operacional.
           Avalie o plano executável em quatro critérios de 0 a 2:
           1. Converte fases em ações concretas e ordenadas sem afirmar que ações já foram executadas.
           2. Define critérios mensuráveis, owners/coordenação ou identifica claramente o que precisa ser confirmado.

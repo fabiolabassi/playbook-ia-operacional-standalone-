@@ -31,6 +31,9 @@ tests:
     assert:
       - type: llm-rubric
         value: |
+          Avalie com rigor e pontue somente o que a resposta sustenta com evidências do cenário.
+          Não aceite como garantidos o cumprimento de SLA ou a ausência de perda sem mecanismo e evidência.
+          Uma afirmação material sem suporte zera o critério afetado; não invente custos.
           Avalie a resposta em quatro critérios de 0 a 2:
           1. Compara pelo menos três estratégias viáveis, apontando benefícios e limitações.
           2. Relaciona as opções aos SLAs distintos de Sentinel e Forge e à exigência de não perder dados.

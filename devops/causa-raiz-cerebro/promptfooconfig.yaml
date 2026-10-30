@@ -63,6 +63,9 @@ tests:
     assert:
       - type: llm-rubric
         value: |
+          Avalie com rigor e pontue somente o que a resposta sustenta com evidências dos dados fornecidos.
+          Não trate correlação como causalidade; hipóteses devem estar identificadas. Uma afirmação
+          material contradita ou sem suporte zera o critério afetado.
           Julgue a resposta como analista de incidentes. Dê nota de 0 a 2 em cada critério:
           (1) identifica a reindexação atrasada como causa, distinguindo-a de heap/cache/timeouts;
           (2) explica a sequência causal com evidências dos artefatos, sem inverter eventos;
@@ -70,4 +73,20 @@ tests:
           (4) explicita lacunas dos dados e não inventa fatos.
           Aprove apenas se a soma for >= 6/8 e nenhum critério receber zero. Considere a resposta inteira,
           não exija formato de saída artificial. Responda com veredito e justificativa concisa.
+          Contexto de referência: a reindexação está agendada para 02:00, com duração média configurada
+          de 90 minutos, mas ainda aparece em execução a 41% às 09:58. Entre 08:00 e 10:00, o throughput
+          de indexação sobe de 4.200 para 12.400 docs/s, heap de 61% para 94%, p99 de 850 para 6.700 ms
+          e hit ratio do cache cai de 74% para 29%. Os logs mostram throttling às 08:41, fila de escrita
+          em 200/200 e rejeições de bulk às 09:58, circuit breaker no mesmo minuto e buscas lentas,
+          parciais e falhas depois. Esses dados mostram correlação temporal, não atribuição direta de
+          consumo de heap à tarefa de reindexação.
+          Escala de pontuação por critério:
+          (1) 0 = causa errada/ausente; 1 = reindex ou heap mencionados sem conexão suficiente;
+              2 = reindexação como provável gatilho, distinguida de mecanismos/sintomas.
+          (2) 0 = sequência ausente/invertida; 1 = sequência parcial; 2 = cronologia sustentada por
+              throughput/heap, throttling/fila, rejeições/circuit breaker e falhas de busca.
+          (3) 0 = ação inútil/arriscada; 1 = ação relevante porém vaga; 2 = contenção reversível,
+              validação observável e correção do ritmo/concorrência, sem presumir que aumentar heap resolva.
+          (4) 0 = fato inventado ou certeza indevida; 1 = incerteza genérica; 2 = limites específicos
+              da evidência e verificações necessárias. Afirmação material sem suporte zera o critério afetado.
         threshold: 0.75

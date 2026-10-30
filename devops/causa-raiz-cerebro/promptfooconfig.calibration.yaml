@@ -1,0 +1,69 @@
+description: Calibration blind set for the Cerebro RCA judge
+
+prompts:
+  - "{{answer}}"
+
+providers:
+  - id: echo
+    label: pre-generated calibration answer
+
+defaultTest:
+  options:
+    provider: google:gemini-3.1-flash-lite
+  assert:
+    - type: llm-rubric
+      value: |
+        Você é um avaliador de RCA. Pontue a resposta estritamente contra os artefatos fornecidos;
+        não complete lacunas com conhecimento externo nem trate correlação como causalidade provada.
+        Responda com nota 0, 1 ou 2 para cada critério, soma /8, veredito e justificativa concisa.
+        Contexto: a reindexação está agendada para 02:00, com duração média configurada de 90 minutos,
+        mas ainda aparece em execução a 41% às 09:58. Entre 08:00 e 10:00, throughput de indexação sobe
+        de 4.200 para 12.400 docs/s, heap de 61% para 94%, p99 de 850 para 6.700 ms e hit ratio cai de
+        74% para 29%. Logs mostram throttling às 08:41, fila em 200/200 e rejeições às 09:58, circuit
+        breaker no mesmo minuto e buscas lentas/parciais/falhas depois. Há correlação temporal, mas não
+        atribuição direta de consumo de heap à reindexação.
+
+        (1) Causa e distinção entre causa/sintomas:
+        0 = não identifica a reindexação em andamento como hipótese causal plausível, ou atribui a
+            causa a um sintoma contradito pelos dados;
+        1 = menciona reindexação ou pressão de heap, mas não conecta os sinais ou confunde causa e efeito;
+        2 = usa o progresso muito lento da reindexação junto ao aumento de heap/indexação para apontar
+            a carga da reindexação como provável gatilho, distinguindo heap, cache, fila, circuit breaker
+            e timeouts como mecanismos/sintomas, sem afirmar causalidade além da evidência.
+
+        (2) Sequência e evidências:
+        0 = não apresenta sequência baseada nos artefatos ou inverte eventos relevantes;
+        1 = apresenta parte da sequência, mas omite evidências ou mistura a ordem temporal;
+        2 = correlaciona corretamente métricas e logs: crescimento de indexação/heap, throttling e fila
+            crescente, rejeições/circuit breaker, seguida de consultas lentas, parciais ou falhas.
+
+        (3) Contenção e correção:
+        0 = não recomenda ação útil ou recomenda ação arriscada/destrutiva sem pré-condições;
+        1 = sugere ação relevante, mas vaga ou sem validação/segurança;
+        2 = recomenda contenção proporcional e reversível da carga de reindexação, validação por heap,
+            fila e p99, e investigação/correção do ritmo ou concorrência antes de retomar. Não presuma
+            que aumentar heap resolva a causa.
+
+        (4) Incerteza e integridade factual:
+        0 = inventa fatos materiais ou declara como provada uma relação não demonstrada;
+        1 = reconhece incerteza genericamente, ou deixa uma hipótese importante sem qualificação;
+        2 = explicita que os dados não provam causalidade direta nem informam atribuição de recursos,
+            e nomeia verificações necessárias sem inventar fatos.
+
+        Afirmação material contradita ou sem suporte limita a nota do critério afetado a 0.
+        Aprove somente com soma >= 6/8 e nenhum critério zerado.
+      threshold: 0.75
+
+tests:
+  - description: Boa - cronologia, contenção reversível e limites da evidência
+    vars:
+      answer: file://calibration/resposta-01-boa.md
+  - description: Fraca - certeza indevida e correção sem evidência
+    vars:
+      answer: file://calibration/resposta-02-fraca.md
+  - description: Fraca - atribuição incorreta ao cache
+    vars:
+      answer: file://calibration/resposta-03-fraca.md
+  - description: Boa - hipótese bem fundamentada, ação vaga
+    vars:
+      answer: file://calibration/resposta-04-boa-acao-vaga.md
