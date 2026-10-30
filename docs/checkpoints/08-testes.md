@@ -4,6 +4,18 @@
 com fixtures representativas. Cada config executa `gpt-4o-mini` e `gemini-3.1-flash-lite`,
 com limites de custo e latência por chamada.
 
-Os limites são contratos a verificar em execuções reais; a validação do YAML não comprova desempenho,
-custo ou qualidade. Após cadastrar `OPENAI_API_KEY` e `GOOGLE_API_KEY`, execute o workflow ou `bash run-tests.sh`
-e registre os resultados sem editar ou inventar saídas.
+## Evidência de execução real
+
+Na execução [#59 do GitHub Actions](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903),
+em 29/10/2026, os três jobs determinísticos terminaram com sucesso:
+
+| Configuração | Job |
+|---|---|
+| `nota-de-triagem` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297190) |
+| `triagem-de-pods` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297336) |
+| `networkpolicy-sentinel` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297382) |
+
+Cada job executou o config Promptfoo com os provedores definidos; `success` confirma que as avaliações
+terminaram sem asserts reprovados. Os JSONs completos foram publicados como artifacts do run, com
+retenção de 14 dias. A evidência vale para os casos e versões executados nessa execução; não garante
+desempenho ou qualidade em execuções futuras.

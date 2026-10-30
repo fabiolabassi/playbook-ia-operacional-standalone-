@@ -4,7 +4,18 @@
 e Gemini para avaliar rubricas específicas. O threshold é 0.75, equivalente a 6/8, e as rubricas
 exigem que nenhum critério fique zerado.
 
-**Calibração pendente:** antes de tratar esses judges como gates confiáveis, uma pessoa deve pontuar
-amostras boas e ruins sem ver as notas do modelo, comparar por critério e registrar divergências.
-Não há calibração humana nova nesta entrega; por isso, o judge está configurado, mas sua calibração
-não é declarada concluída.
+## Evidência de execução real
+
+Na [execução #59](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903),
+as cinco suítes com `llm-rubric` passaram:
+
+| Suíte | Resultado |
+|---|---|
+| `causa-raiz-cerebro` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297236) |
+| `backpressure-relay` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297280) |
+| `migracao-forge-diagnostico` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297253) |
+| `migracao-forge-planejamento` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297383) |
+| `migracao-forge-execucao` | [success](https://github.com/fabiolabassi/playbook-ia-operacional-standalone-/actions/runs/40990743903/job/123852297263) |
+
+Esses resultados comprovam aprovação pelo gate daquela execução, mas não substituem calibração humana
+nem permitem declarar que os judges estão calibrados.
