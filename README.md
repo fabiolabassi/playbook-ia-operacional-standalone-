@@ -56,7 +56,5 @@ PRs de forks não recebem secrets e não executam avaliações que chamem proved
 | 09 | [`docs/checkpoints/09-juiz.md`](docs/checkpoints/09-juiz.md) |
 | 10 | [`docs/checkpoints/10-ci.md`](docs/checkpoints/10-ci.md) |
 
-A execução real do CI está registrada em [`docs/checkpoints/08-testes.md`](docs/checkpoints/08-testes.md)
-e [`docs/checkpoints/10-ci.md`](docs/checkpoints/10-ci.md). A calibração humana do judge tem status
-e evidências próprias em [`docs/checkpoints/09-juiz.md`](docs/checkpoints/09-juiz.md); aprovação
-automática no CI, isoladamente, não significa que o judge esteja calibrado.
+As configurações e o workflow não substituem evidência de execução real nem calibração humana.
+Essas etapas estão identificadas como pendentes até serem realizadas e registradas; não há resultados simulados.
