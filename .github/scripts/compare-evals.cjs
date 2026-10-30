@@ -1,13 +1,17 @@
 const fs = require('node:fs');
 
 function readPassRate(path) {
-  const report = JSON.parse(fs.readFileSync(path, 'utf8'));
-  if (!Array.isArray(report.results) || report.results.length === 0) {
+  const contents = fs.readFileSync(path, 'utf8').replace(/^\uFEFF/, '');
+  const report = JSON.parse(contents);
+  const results = Array.isArray(report.results)
+    ? report.results
+    : report.results?.results;
+  if (!Array.isArray(results) || results.length === 0) {
     throw new Error(`Evaluation report has no results: ${path}`);
   }
 
-  const passed = report.results.filter((result) => result && result.success === true).length;
-  return { passed, total: report.results.length };
+  const passed = results.filter((result) => result && result.success === true).length;
+  return { passed, total: results.length };
 }
 
 function formatRate({ passed, total }) {
