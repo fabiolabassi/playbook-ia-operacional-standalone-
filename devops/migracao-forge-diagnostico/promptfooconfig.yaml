@@ -33,10 +33,6 @@ tests:
     assert:
       - type: llm-rubric
         value: |
-          Avalie com rigor e pontue somente o que a resposta sustenta com evidências do cenário.
-          Não atribua requisitos não informados aos consumidores (por exemplo, exigir tempo real do billing).
-          Hipóteses devem estar identificadas; uma afirmação material contradita ou sem suporte zera
-          o critério afetado.
           Avalie o diagnóstico em quatro critérios de 0 a 2:
           1. Descreve o fluxo batch e aponta a semântica de lote/partição que precisa ser preservada.
           2. Identifica riscos específicos de acúmulo, duplicidade, ordenação e dependências consumidoras.
